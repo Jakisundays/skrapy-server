@@ -4,4 +4,4 @@ services:
     env: docker
     repo: https://github.com/Jakisundays/skrapy-server
     plan: starter
-    autoDeploy: false
+    autoDeploy: true

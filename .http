@@ -1,1 +1,1 @@
-GET http://localhost:3000/api/followers/bais_bynight
+GET http://localhost:3000/api/scraper/followers/bais_bynight

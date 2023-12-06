@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { getAllFollowers } from "../utils/insta.actions";
+import { getAllFollowers } from "../controllers/insta.actions";
 
 const scraperRoutes = new Elysia({ prefix: "/scraper" }).get(
   "/followers/:idOrUsernameOrUrl",

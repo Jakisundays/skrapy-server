@@ -1,9 +1,8 @@
 import { User } from "../types";
-import { instaInstance } from "./instaInstance";
+import { instaInstance } from "../utils/instaInstance";
 
 export const getAllFollowers = async (
   idOrUsernameOrUrl: string,
-  amount = 500
 ) => {
   try {
     let allUsers: User[] = [];
@@ -18,7 +17,6 @@ export const getAllFollowers = async (
       });
 
       const nextPageToken = data.pagination_token;
-      console.log({ nextPageToken });
       const { items } = data.data;
 
       const filteredUsers: User[] = items

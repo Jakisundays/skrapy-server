@@ -2,7 +2,7 @@ import { Elysia } from "elysia";
 import scraperRoutes from "./routes/scraper";
 
 const app = new Elysia({ prefix: "/api" })
-  .get("/", () => "Hello Elysia")
+  .get("/", () => "¡Bienvenido al server de Skrapy.io! 🎉🤖✨")
   .use(scraperRoutes)
   .listen(3000);
 

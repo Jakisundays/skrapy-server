@@ -1,1 +1,7 @@
-GET http://localhost:3000/api/scraper/followers/bais_bynight
+GET http://localhost:3000/api/scraper/followers/rick.y.morty_
+###
+GET http://localhost:3000/api/scraper/following/rick.y.morty_
+###
+GET http://localhost:3000/api/scraper/likes/BZhRIWQH3tk
+###
+GET http://localhost:3000/api/scraper/comments/C0fZ5XSrm_b

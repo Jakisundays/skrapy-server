@@ -4,6 +4,7 @@ import {
   getAllFollowing,
   getCommentsOnPost,
   getLikersOfPost,
+  getUsersByHashtag,
 } from "../controllers/insta.actions";
 
 const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
@@ -18,6 +19,9 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
   )
   .get("/comments/:code_or_id_or_url", ({ params: { code_or_id_or_url } }) =>
     getCommentsOnPost(code_or_id_or_url)
-  );
+  )
+  .get("hashtag/:hashtag", ({ params: { hashtag } }) => {
+    getUsersByHashtag(hashtag);
+  });
 
 export default scraperRoutes;

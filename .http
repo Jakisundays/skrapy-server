@@ -5,3 +5,14 @@ GET http://localhost:3000/api/scraper/following/rick.y.morty_
 GET http://localhost:3000/api/scraper/likes/BZhRIWQH3tk
 ###
 GET http://localhost:3000/api/scraper/comments/C0fZ5XSrm_b
+###
+GET http://localhost:3000/api/scraper/hashtag/bunjs
+###
+POST http://localhost:3000/api/email/send
+Content-Type: application/json
+
+{
+    "full_name": "Jako",
+    "to": "jacobguillermooo@gmail.com",
+    "subject": "Email testing"
+}

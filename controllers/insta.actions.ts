@@ -101,7 +101,7 @@ export const getLikersOfPost = async (code_or_id_or_url: string) => {
       paginationToken = nextPageToken;
     } while (paginationToken);
     console.log({ length: allUsers.length });
-    return new Response(JSON.stringify(allUsers));
+    return allUsers;
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });
@@ -140,6 +140,33 @@ export const getCommentsOnPost = async (code_or_id_or_url: string) => {
       paginationToken = nextPageToken;
     } while (paginationToken);
     return new Response(JSON.stringify(allComments));
+  } catch (error) {
+    console.error({ error });
+    return new Response("Bad request", { status: 500 });
+  }
+};
+
+export const getUsersByHashtag = async (hashtag: string) => {
+  try {
+    let allUsers: User[] = [];
+    let paginationToken: string | undefined = undefined;
+    do {
+      const { data }: any = await instaInstance.get("/hashtag", {
+        params: {
+          hashtag,
+        },
+      });
+      const nextPageToken = data.pagination_token;
+      const { items } = data.data;
+
+      const filteredUsers: User[] = items.map(
+        async (item: any) => await getLikersOfPost(item.id)
+      );
+      allUsers = allUsers.concat(filteredUsers);
+      paginationToken = nextPageToken;
+    } while (paginationToken);
+    console.log({ length: allUsers.length });
+    return allUsers;
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });

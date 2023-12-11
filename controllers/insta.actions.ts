@@ -69,8 +69,8 @@ export const getAllFollowing = async (idOrUsernameOrUrl: string) => {
       allUsers = allUsers.concat(filteredUsers);
       paginationToken = nextPageToken;
     } while (paginationToken);
-
-    return new Response(JSON.stringify(allUsers));
+    return allUsers;
+    // return new Response(JSON.stringify(allUsers));
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });
@@ -100,7 +100,7 @@ export const getLikersOfPost = async (code_or_id_or_url: string) => {
       allUsers = allUsers.concat(userList);
       paginationToken = nextPageToken;
     } while (paginationToken);
-    console.log({ length: allUsers.length });
+    // console.log({ length: allUsers.length });
     return allUsers;
   } catch (error) {
     console.error({ error });
@@ -139,7 +139,8 @@ export const getCommentsOnPost = async (code_or_id_or_url: string) => {
       allComments = allComments.concat(comments);
       paginationToken = nextPageToken;
     } while (paginationToken);
-    return new Response(JSON.stringify(allComments));
+    return allComments;
+    // return new Response(JSON.stringify(allComments));
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });
@@ -147,6 +148,7 @@ export const getCommentsOnPost = async (code_or_id_or_url: string) => {
 };
 
 export const getUsersByHashtag = async (hashtag: string) => {
+  console.log({ hashtag });
   try {
     let allUsers: User[] = [];
     let paginationToken: string | undefined = undefined;
@@ -158,14 +160,15 @@ export const getUsersByHashtag = async (hashtag: string) => {
       });
       const nextPageToken = data.pagination_token;
       const { items } = data.data;
-
-      const filteredUsers: User[] = items.map(
-        async (item: any) => await getLikersOfPost(item.id)
-      );
+      // console.log({ items });allUsers
+      // const filteredUsers: User[] = items.map(
+      //   async (item: any) => await getLikersOfPost(item.id)
+      // );
+      const filteredUsers = (await getLikersOfPost(items[0].id)) as User[];
       allUsers = allUsers.concat(filteredUsers);
-      paginationToken = nextPageToken;
+      paginationToken = undefined;
+      // paginationToken = nextPageToken;
     } while (paginationToken);
-    console.log({ length: allUsers.length });
     return allUsers;
   } catch (error) {
     console.error({ error });

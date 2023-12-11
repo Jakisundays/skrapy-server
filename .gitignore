@@ -12,7 +12,7 @@
 /.next/
 /out/
 
-*.http
+.http
 
 # production
 /build

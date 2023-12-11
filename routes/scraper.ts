@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import {
   getAllFollowers,
   getAllFollowing,
@@ -8,18 +8,28 @@ import {
 } from "../controllers/insta.actions";
 
 const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
-  .get("/followers/:idOrUsernameOrUrl", ({ params: { idOrUsernameOrUrl } }) =>
-    getAllFollowers(idOrUsernameOrUrl)
+  .get("hashtag/:hashtag", ({ params: { hashtag } }) =>
+    getUsersByHashtag(hashtag)
   )
-  .get("/following/:idOrUsernameOrUrl", ({ params: { idOrUsernameOrUrl } }) =>
-    getAllFollowing(idOrUsernameOrUrl)
-  )
-  .get("/likes/:code_or_id_or_url", ({ params: { code_or_id_or_url } }) =>
-    getLikersOfPost(code_or_id_or_url)
-  )
-  .get("/comments/:code_or_id_or_url", ({ params: { code_or_id_or_url } }) =>
-    getCommentsOnPost(code_or_id_or_url)
-  )
-  .get("hashtag/:hashtag", ({ params: { hashtag } }) => getUsersByHashtag(hashtag));
+  .post("/followers", ({ body }) => getAllFollowers(body.idOrUsernameOrUrl), {
+    body: t.Object({
+      idOrUsernameOrUrl: t.String(),
+    }),
+  })
+  .post("/following", ({ body }) => getAllFollowing(body.idOrUsernameOrUrl), {
+    body: t.Object({
+      idOrUsernameOrUrl: t.String(),
+    }),
+  })
+  .post("/likes", ({ body }) => getLikersOfPost(body.code_or_id_or_url), {
+    body: t.Object({
+      code_or_id_or_url: t.String(),
+    }),
+  })
+  .post("/comments", ({ body }) => getCommentsOnPost(body.code_or_id_or_url), {
+    body: t.Object({
+      code_or_id_or_url: t.String(),
+    }),
+  });
 
 export default scraperRoutes;

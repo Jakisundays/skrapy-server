@@ -16,3 +16,17 @@ Content-Type: application/json
     "to": "jacobguillermooo@gmail.com",
     "subject": "Email testing"
 }
+###
+POST http://localhost:8080/api/scraper/followers
+Content-Type: application/json
+
+{
+    "idOrUsernameOrUrl": "rick.y.morty_"
+}
+###
+POST http://localhost:8080/api/scraper/likes
+Content-Type: application/json
+
+{
+    "code_or_id_or_url": "BZhRIWQH3tk"
+}

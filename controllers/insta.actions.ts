@@ -140,7 +140,6 @@ export const getCommentsOnPost = async (code_or_id_or_url: string) => {
       paginationToken = nextPageToken;
     } while (paginationToken);
     return allComments;
-    // return new Response(JSON.stringify(allComments));
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });

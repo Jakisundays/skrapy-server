@@ -12,7 +12,7 @@ const app = new Elysia()
   .get("/", () => "¡Bienvenido al server de Skrapy.io! 🎉🤖✨")
   .use(scraperRoutes)
   .use(emailRoutes)
-  .listen(3000);
+  .listen(8080);
 
 console.log(
   `🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}`

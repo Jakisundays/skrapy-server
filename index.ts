@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import scraperRoutes from "./routes/scraper";
 import { cors } from "@elysiajs/cors";
 import emailRoutes from "./routes/email.route";
+import authRoutes from "./routes/auth.route";
 
 const app = new Elysia()
   .use(
@@ -12,6 +13,7 @@ const app = new Elysia()
   .get("/", () => "¡Bienvenido al server de Skrapy.io! 🎉🤖✨")
   .use(scraperRoutes)
   .use(emailRoutes)
+  .use(authRoutes)
   .onError(({ code, error, set }) => {
     if (code === "NOT_FOUND") {
       set.status = 404;
@@ -22,5 +24,5 @@ const app = new Elysia()
   .listen(8080);
 
 console.log(
-  `🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}`
+  `🚀 Skrapy.io is running at http://${app.server?.hostname}:${app.server?.port}`
 );

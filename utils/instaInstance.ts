@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from "axios";
+import axiosRateLimit from "axios-rate-limit";
 
-export const instaInstance: AxiosInstance = axios.create({
+const axiosInstance: AxiosInstance = axios.create({
   baseURL: "https://instagram-scraper-api2.p.rapidapi.com/v1",
   headers: {
     "X-RapidAPI-Key": Bun.env.RAPIDAPI_KEY,
@@ -8,3 +9,8 @@ export const instaInstance: AxiosInstance = axios.create({
   },
 });
 
+export const instaInstance = axiosRateLimit(axiosInstance, {
+  maxRequests: 110,
+  // per minute
+  perMilliseconds: 60 * 1000,
+});

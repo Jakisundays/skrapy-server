@@ -81,3 +81,13 @@ export interface HashTagProfile {
   name: string;
   profile_pic_url: string | null;
 }
+
+export interface UserRetrievalParams {
+  idOrUsernameOrUrl: string;
+  amount: number;
+  mode: "following" | "followers";
+}
+
+export interface FilteredUserScanParams extends UserRetrievalParams {
+  filterProperty: "public_email" | "public_phone_number";
+}

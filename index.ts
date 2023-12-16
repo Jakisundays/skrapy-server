@@ -7,7 +7,7 @@ import authRoutes from "./routes/auth.route";
 const app = new Elysia()
   .use(
     cors({
-      origin: "RENDER" in Bun.env ? /\*.skrapy.io$/ : true,
+      // origin: "RENDER" in Bun.env ? /\*.skrapy.io$/ : true,
     })
   )
   .get("/", () => "¡Bienvenido al server de Skrapy.io! 🎉🤖✨")

@@ -91,3 +91,9 @@ export interface UserRetrievalParams {
 export interface FilteredUserScanParams extends UserRetrievalParams {
   filterProperty: "public_email" | "public_phone_number";
 }
+
+
+// export interface RetrieveAmountOfUsersParams {
+//   code_or_id_or_url: string;
+//   amount: number;
+// }

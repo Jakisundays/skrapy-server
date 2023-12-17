@@ -52,7 +52,7 @@ export const getAllUsersByType = async ({
           return userInfo;
         })
       );
-      
+
       allUsers = allUsers.concat(usersWithInfo);
       paginationToken = nextPageToken;
     } while (paginationToken);
@@ -337,3 +337,121 @@ export const getAmountOfUsers = async ({
     throw error;
   }
 };
+
+export const retrieveAmountOfUsersByLikes = async ({
+  code_or_id_or_url,
+  amount,
+}: {
+  code_or_id_or_url: string;
+  amount: number;
+}): Promise<UserProfile[]> => {
+  // Initialize an array to store user profiles
+  const users: User[] = [];
+  // Initialize pagination token to undefined
+  let paginationToken: string | undefined = undefined;
+  try {
+    while (users.length < amount && paginationToken !== null) {
+      const { data }: any = await instaInstance.get("/likes", {
+        params: {
+          code_or_id_or_url,
+          pagination_token: paginationToken,
+        },
+      });
+      const nextPageToken = data.pagination_token;
+      const { items } = data.data;
+      const userList: User[] = items
+        .filter((user: any) => !user.is_private)
+        .map((user: any) => ({
+          full_name: user.full_name,
+          id: user.id,
+          profile_pic_url: user.profile_pic_url,
+          is_verified: user.is_verified,
+          userName: user.username,
+          is_private: user.is_private,
+        }));
+      users.push(...userList);
+      paginationToken = nextPageToken;
+    }
+    const userProfiles: UserProfile[] = await Promise.all(
+      users.slice(0, amount).map(async (user) => {
+        // Retrieve user profile information
+        const userInfo = await retrieveUserInfo(user.id);
+        // Throw an error if user profile is not found
+        if (!userInfo) {
+          throw new Error(`User not found: ${user.userName} (${user.id})`);
+        }
+        // Return the user profile information
+        return userInfo;
+      })
+    );
+    return userProfiles;
+  } catch (error) {
+    console.error({ error });
+    // Re-throw the error for higher-level error handling
+    throw error;
+  }
+};
+// export const retrieveAmountOfUsersByComments = async ({
+//   code_or_id_or_url,
+//   amount,
+// }: {
+//   code_or_id_or_url: string;
+//   amount: number;
+// }): Promise<UserProfile[]> => {
+//   const users: User[] = [];
+//   let paginationToken: string | undefined = undefined;
+//   let allComments: Comment[] = [];
+//   try {
+//     while (users.length < amount && paginationToken !== null) {
+//       const { data }: any = await instaInstance.get("/comments", {
+//         params: {
+//           code_or_id_or_url,
+//           pagination_token: paginationToken,
+//         },
+//       });
+//       const nextPageToken = data.pagination_token;
+//       const { items } = data.data;
+
+//       const comments: Comment[] = items.map((comment: any) => {
+//         const commentInfo = {
+//           id: comment.id,
+//           child_comment_count: comment.child_comment_count,
+//           like_count: comment.like_count,
+//           created_at_utc: comment.created_at_utc,
+//           text: comment.text,
+//           user: {
+//             full_name: comment.user.full_name,
+//             userName: comment.user.username,
+//             id: comment.user.id,
+//             profile_pic_url: comment.user.profile_pic_url,
+//             is_verified: comment.user.is_verified,
+//             is_private: comment.user.is_private,
+//           },
+//         };
+//         if (!comment.user.is_private) {
+//           users.push(comment.user);
+//         }
+//         return commentInfo;
+//       });
+//       allComments = allComments.concat(comments);
+//       paginationToken = nextPageToken;
+//     }
+//     const userProfiles: UserProfile[] = await Promise.all(
+//       users.slice(0, amount).map(async (user) => {
+//         // Retrieve user profile information
+//         const userInfo = await retrieveUserInfo(user.id);
+//         // Throw an error if user profile is not found
+//         if (!userInfo) {
+//           throw new Error(`User not found: ${user.userName} (${user.id})`);
+//         }
+//         // Return the user profile information
+//         return userInfo;
+//       })
+//     );
+//     return userProfiles;
+//   } catch (error) {
+//     console.error({ error });
+//     // Re-throw the error for higher-level error handling
+//     throw error;
+//   }
+// };

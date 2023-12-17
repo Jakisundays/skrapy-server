@@ -18,7 +18,7 @@ export const getAllUsersByType = async ({
   idOrUsernameOrUrl,
 }: getAllUsersByTypeParams) => {
   try {
-    let allUsers: User[] = [];
+    let allUsers: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
 
     do {
@@ -33,7 +33,7 @@ export const getAllUsersByType = async ({
       const { items } = data.data;
 
       const filteredUsers: User[] = items
-        // .filter((user: any) => !user.is_private)
+        .filter((user: any) => !user.is_private)
         .map((user: any) => ({
           id: user.id,
           userName: user.username,
@@ -43,11 +43,20 @@ export const getAllUsersByType = async ({
           is_private: user.is_private,
         }));
 
-      allUsers = allUsers.concat(filteredUsers);
+      const usersWithInfo: UserProfile[] = await Promise.all(
+        filteredUsers.map(async (user: User) => {
+          const userInfo = await retrieveUserInfo(user.id);
+          if (!userInfo) {
+            throw new Error("No se pudo obtener la información del usuario.");
+          }
+          return userInfo;
+        })
+      );
+      
+      allUsers = allUsers.concat(usersWithInfo);
       paginationToken = nextPageToken;
     } while (paginationToken);
     return allUsers;
-    // return new Response(JSON.stringify(allUsers));
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });

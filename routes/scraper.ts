@@ -4,16 +4,18 @@ import {
   getAmountOfUsers,
   getCommentsOnPost,
   getLikersOfPost,
-  getUsersByHashtag,
-  retrieveAmountOfUsersByComments,
+  retrieveUsersByHashtag,
   retrieveAmountOfUsersByLikes,
   scanUsersForFilteredProperty,
 } from "../controllers/insta.actions";
 
 const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
-  .get("hashtag/:hashtag", ({ params: { hashtag } }) =>
-    getUsersByHashtag(hashtag)
-  )
+  .post("/retrieveUsersByHashtag", ({ body }) => retrieveUsersByHashtag(body), {
+    body: t.Object({
+      hashtag: t.String(),
+      amount: t.Number(),
+    }),
+  })
   .post("/retrieveUserConnections", ({ body }) => getAllUsersByType(body), {
     body: t.Object({
       idOrUsernameOrUrl: t.String(),
@@ -57,16 +59,16 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       code_or_id_or_url: t.String(),
       amount: t.Number(),
     }),
-  })
-  // .post(
-  //   "/getLimitedComments",
-  //   ({ body }) => retrieveAmountOfUsersByComments(body),
-  //   {
-  //     body: t.Object({
-  //       code_or_id_or_url: t.String(),
-  //       amount: t.Number(),
-  //     }),
-  //   }
-  // );
+  });
+// .post(
+//   "/getLimitedComments",
+//   ({ body }) => retrieveAmountOfUsersByComments(body),
+//   {
+//     body: t.Object({
+//       code_or_id_or_url: t.String(),
+//       amount: t.Number(),
+//     }),
+//   }
+// );
 
 export default scraperRoutes;

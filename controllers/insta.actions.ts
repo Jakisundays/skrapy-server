@@ -8,15 +8,13 @@ import {
 } from "../types";
 import { instaInstance } from "../utils/instaInstance";
 
-interface getAllUsersByTypeParams {
-  idOrUsernameOrUrl: string;
-  mode: "followers" | "following";
-}
-
 export const getAllUsersByType = async ({
   mode,
   idOrUsernameOrUrl,
-}: getAllUsersByTypeParams) => {
+}: {
+  idOrUsernameOrUrl: string;
+  mode: "followers" | "following";
+}) => {
   try {
     let allUsers: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
@@ -74,7 +72,7 @@ export const getLikersOfPost = async (code_or_id_or_url: string) => {
       const nextPageToken = data.pagination_token;
       const { items } = data.data;
       const userList: User[] = items
-        // .filter((user: any) => !user.is_private)
+        .filter((user: any) => !user.is_private)
         .map((user: any) => ({
           full_name: user.full_name,
           id: user.id,
@@ -132,10 +130,16 @@ export const getCommentsOnPost = async (code_or_id_or_url: string) => {
   }
 };
 
-export const getUsersByHashtag = async (hashtag: string) => {
+export const retrieveUsersByHashtag = async ({
+  hashtag,
+  amount,
+}: {
+  hashtag: string;
+  amount: number;
+}) => {
   console.log({ hashtag });
   try {
-    let allUsers: User[] = [];
+    let allUsers: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
     do {
       const { data }: any = await instaInstance.get("/hashtag", {
@@ -145,16 +149,20 @@ export const getUsersByHashtag = async (hashtag: string) => {
       });
       const nextPageToken = data.pagination_token;
       const { items } = data.data;
-      // console.log({ items });allUsers
-      // const filteredUsers: User[] = items.map(
-      //   async (item: any) => await getLikersOfPost(item.id)
-      // );
-      const filteredUsers = (await getLikersOfPost(items[0].id)) as User[];
-      allUsers = allUsers.concat(filteredUsers);
-      paginationToken = undefined;
-      // paginationToken = nextPageToken;
+      for (const item in items) {
+        const filteredUsers: UserProfile[] = await retrieveAmountOfUsersByLikes(
+          {
+            code_or_id_or_url: items[item].id,
+            amount,
+          }
+        );
+        console.log({ filteredUsers });
+        allUsers = allUsers.concat(filteredUsers);
+      }
+      paginationToken = nextPageToken;
     } while (paginationToken);
-    return allUsers;
+    console.log({ allUsers });
+    return allUsers.slice(0, amount);
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });
@@ -372,6 +380,7 @@ export const retrieveAmountOfUsersByLikes = async ({
       users.push(...userList);
       paginationToken = nextPageToken;
     }
+
     const userProfiles: UserProfile[] = await Promise.all(
       users.slice(0, amount).map(async (user) => {
         // Retrieve user profile information
@@ -384,74 +393,16 @@ export const retrieveAmountOfUsersByLikes = async ({
         return userInfo;
       })
     );
-    return userProfiles;
+
+    // Use Promise.all again to wait for all promises to resolve
+    const filteredUserProfiles: UserProfile[] = await Promise.all(
+      userProfiles.filter((profile: UserProfile | null) => profile !== null)
+    );
+
+    return filteredUserProfiles;
   } catch (error) {
     console.error({ error });
     // Re-throw the error for higher-level error handling
     throw error;
   }
 };
-// export const retrieveAmountOfUsersByComments = async ({
-//   code_or_id_or_url,
-//   amount,
-// }: {
-//   code_or_id_or_url: string;
-//   amount: number;
-// }): Promise<UserProfile[]> => {
-//   const users: User[] = [];
-//   let paginationToken: string | undefined = undefined;
-//   let allComments: Comment[] = [];
-//   try {
-//     while (users.length < amount && paginationToken !== null) {
-//       const { data }: any = await instaInstance.get("/comments", {
-//         params: {
-//           code_or_id_or_url,
-//           pagination_token: paginationToken,
-//         },
-//       });
-//       const nextPageToken = data.pagination_token;
-//       const { items } = data.data;
-
-//       const comments: Comment[] = items.map((comment: any) => {
-//         const commentInfo = {
-//           id: comment.id,
-//           child_comment_count: comment.child_comment_count,
-//           like_count: comment.like_count,
-//           created_at_utc: comment.created_at_utc,
-//           text: comment.text,
-//           user: {
-//             full_name: comment.user.full_name,
-//             userName: comment.user.username,
-//             id: comment.user.id,
-//             profile_pic_url: comment.user.profile_pic_url,
-//             is_verified: comment.user.is_verified,
-//             is_private: comment.user.is_private,
-//           },
-//         };
-//         if (!comment.user.is_private) {
-//           users.push(comment.user);
-//         }
-//         return commentInfo;
-//       });
-//       allComments = allComments.concat(comments);
-//       paginationToken = nextPageToken;
-//     }
-//     const userProfiles: UserProfile[] = await Promise.all(
-//       users.slice(0, amount).map(async (user) => {
-//         // Retrieve user profile information
-//         const userInfo = await retrieveUserInfo(user.id);
-//         // Throw an error if user profile is not found
-//         if (!userInfo) {
-//           throw new Error(`User not found: ${user.userName} (${user.id})`);
-//         }
-//         // Return the user profile information
-//         return userInfo;
-//       })
-//     );
-//     return userProfiles;
-//   } catch (error) {
-//     console.error({ error });
-//     // Re-throw the error for higher-level error handling
-//     throw error;
-//   }
-// };

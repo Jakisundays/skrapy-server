@@ -60,3 +60,11 @@ Content-Type: application/json
      "code_or_id_or_url": "https://www.instagram.com/p/CxdC3l4Odtr/",
      "amount": 4
 }
+###
+POST http://localhost:8080/api/scraper/getUserAMountBytag
+Content-Type: application/json
+
+{
+     "hashtag": "oreo",
+     "amount": 4
+}

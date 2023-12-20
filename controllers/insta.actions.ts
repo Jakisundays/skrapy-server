@@ -137,7 +137,6 @@ export const retrieveUsersByHashtag = async ({
   hashtag: string;
   amount: number;
 }) => {
-  console.log({ hashtag });
   try {
     let allUsers: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
@@ -160,8 +159,7 @@ export const retrieveUsersByHashtag = async ({
         allUsers = allUsers.concat(filteredUsers);
       }
       paginationToken = nextPageToken;
-    } while (paginationToken);
-    console.log({ allUsers });
+    } while (paginationToken && allUsers.length > amount);
     return allUsers.slice(0, amount);
   } catch (error) {
     console.error({ error });

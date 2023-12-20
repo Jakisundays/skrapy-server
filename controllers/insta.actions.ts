@@ -159,7 +159,7 @@ export const retrieveUsersByHashtag = async ({
         allUsers = allUsers.concat(filteredUsers);
       }
       paginationToken = nextPageToken;
-    } while (paginationToken && allUsers.length > amount);
+    } while (paginationToken && allUsers.length < amount);
     return allUsers.slice(0, amount);
   } catch (error) {
     console.error({ error });

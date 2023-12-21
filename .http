@@ -68,3 +68,11 @@ Content-Type: application/json
      "hashtag": "oreo",
      "amount": 4
 }
+###
+POST http://localhost:8080/api/scraper/retrieveUsersByComments
+Content-Type: application/json
+
+{
+     "code_or_id_or_url": "https://www.instagram.com/p/C1HwYFlNeUO/",
+     "amount": 4
+}

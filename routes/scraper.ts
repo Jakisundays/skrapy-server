@@ -7,6 +7,7 @@ import {
   retrieveUsersByHashtag,
   retrieveAmountOfUsersByLikes,
   scanUsersForFilteredProperty,
+  retrieveUsersByComments,
 } from "../controllers/insta.actions";
 
 const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
@@ -59,16 +60,16 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       code_or_id_or_url: t.String(),
       amount: t.Number(),
     }),
-  });
-// .post(
-//   "/getLimitedComments",
-//   ({ body }) => retrieveAmountOfUsersByComments(body),
-//   {
-//     body: t.Object({
-//       code_or_id_or_url: t.String(),
-//       amount: t.Number(),
-//     }),
-//   }
-// );
+  })
+  .post(
+    "/retrieveUsersByComments",
+    ({ body }) => retrieveUsersByComments(body),
+    {
+      body: t.Object({
+        code_or_id_or_url: t.String(),
+        amount: t.Number(),
+      }),
+    }
+  );
 
 export default scraperRoutes;

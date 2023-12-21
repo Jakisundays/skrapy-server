@@ -404,3 +404,67 @@ export const retrieveAmountOfUsersByLikes = async ({
     throw error;
   }
 };
+
+export const retrieveUsersByComments = async ({
+  code_or_id_or_url,
+  amount,
+}: {
+  code_or_id_or_url: string;
+  amount: number;
+}) => {
+  let users: User[] = [];
+  let userProfiles: UserProfile[] = [];
+  let paginationToken: string | undefined = undefined;
+  let allComments: Comment[] = [];
+  try {
+    do {
+      const { data }: any = await instaInstance.get("/comments", {
+        params: { code_or_id_or_url, pagination_token: paginationToken },
+      });
+      const nextPageToken = data.pagination_token;
+      const { items } = data.data;
+
+      const comments: Comment[] = items
+        .filter((comment: any) => !comment.user.is_private)
+        .map(async (comment: any) => {
+          const newComment = {
+            id: comment.id,
+            child_comment_count: comment.child_comment_count,
+            like_count: comment.like_count,
+            created_at_utc: comment.created_at_utc,
+            text: comment.text,
+            user: {
+              full_name: comment.user.full_name,
+              userName: comment.user.username,
+              id: comment.user.id,
+              profile_pic_url: comment.user.profile_pic_url,
+              is_verified: comment.user.is_verified,
+              is_private: comment.user.is_private,
+            },
+          };
+          if (!users.includes(newComment.user) && users.length < amount) {
+            const newUser = await retrieveUserInfo(newComment.user.id);
+            if (
+              newUser &&
+              !userProfiles.includes(newUser) &&
+              userProfiles.length < amount
+            ) {
+              userProfiles.push(newUser);
+            }
+            users.push(newComment.user);
+          }
+          return newComment;
+        });
+      allComments = allComments.concat(comments);
+      paginationToken = nextPageToken;
+    } while (paginationToken && users.length < amount);
+    if (users.length < amount) {
+      console.log("Not enough public users found.");
+    }
+    console.log({ userProfiles, legnht: userProfiles.length });
+    return userProfiles;
+  } catch (error) {
+    console.error({ error });
+    return new Response("Bad request", { status: 500 });
+  }
+};

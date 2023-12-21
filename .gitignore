@@ -7,6 +7,7 @@
 
 # testing
 /coverage
+testing.ts
 
 # next.js
 /.next/

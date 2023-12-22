@@ -140,26 +140,33 @@ export const retrieveUsersByHashtag = async ({
   try {
     let allUsers: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
-    do {
+
+    while (paginationToken && allUsers.length < amount) {
       const { data }: any = await instaInstance.get("/hashtag", {
         params: {
           hashtag,
         },
       });
+
       const nextPageToken = data.pagination_token;
-      const { items } = data.data;
-      for (const item in items) {
+      const items = data.data.items;
+
+      const promises = items.map(async (item: any) => {
         const filteredUsers: UserProfile[] = await retrieveAmountOfUsersByLikes(
           {
-            code_or_id_or_url: items[item].id,
+            code_or_id_or_url: item.id,
             amount,
           }
         );
         console.log({ filteredUsers });
         allUsers = allUsers.concat(filteredUsers);
-      }
+      });
+
+      await Promise.all(promises);
+
       paginationToken = nextPageToken;
-    } while (paginationToken && allUsers.length < amount);
+    }
+
     return allUsers.slice(0, amount);
   } catch (error) {
     console.error({ error });

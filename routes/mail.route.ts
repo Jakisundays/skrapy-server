@@ -5,9 +5,6 @@ import {
   getGoogleAuthURL,
   retrieveAccessToken,
 } from "../controllers/mail.actions";
-import { render } from "@react-email/render";
-import { TestingEmail } from "../templates/TestingEmail";
-import React from "react";
 
 const mailRoutes = new Elysia({ prefix: "/api/mail" })
   .get("/", () => getGoogleAuthURL())

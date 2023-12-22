@@ -61,7 +61,7 @@ Content-Type: application/json
      "amount": 4
 }
 ###
-POST http://localhost:8080/api/scraper/getUserAMountBytag
+POST http://localhost:8080/api/scraper/retrieveUsersByHashtag
 Content-Type: application/json
 
 {

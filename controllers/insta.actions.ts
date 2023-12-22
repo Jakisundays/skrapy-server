@@ -146,7 +146,6 @@ export const retrieveUsersByHashtag = async ({
           hashtag,
         },
       });
-      console.log("got data");
 
       const nextPageToken = data.pagination_token;
       const { items } = data.data;

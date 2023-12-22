@@ -79,3 +79,12 @@ Content-Type: application/json
      "hashtag": "oreo",
      "amount": 4
 }
+
+###
+POST https://skrapy-server.onrender.com/api/scraper/retrieveUsersByHashtag
+Content-Type: application/json
+
+{
+     "hashtag": "oreo",
+     "amount": 4
+}

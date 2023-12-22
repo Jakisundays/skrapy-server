@@ -10,18 +10,22 @@ import {
 import * as React from "react";
 
 interface TestEmailProps {
+  preview: string;
+  heading: string;
   content: string;
 }
 
 export const TestingEmail = ({
+  preview,
+  heading,
   content,
 }: TestEmailProps): React.ReactElement => (
   <Html>
     <Head />
-    <Preview>Este texto se puede modificar✨</Preview>
+    <Preview>{preview}✨</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Este texto se puede modificar✨ </Heading>
+        <Heading style={h1}>{heading}✨</Heading>
         <Text style={text}>{content}</Text>
       </Container>
     </Body>

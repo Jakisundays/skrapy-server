@@ -9,6 +9,7 @@ import {
   scanUsersForFilteredProperty,
   retrieveUsersByComments,
 } from "../controllers/insta.actions";
+import axios from "axios";
 
 const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
   .post("/retrieveUsersByHashtag", ({ body }) => retrieveUsersByHashtag(body), {
@@ -70,6 +71,48 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
         amount: t.Number(),
       }),
     }
-  );
+  )
+  .post("/retreiveUsersByLoc", async () => await retreiveUsersByLoc());
 
 export default scraperRoutes;
+
+const retreiveUsersByLoc = async () => {
+  // try {
+  //   console.log("trying to get data");
+  //   const data = await axios.request({
+  //     method: "GET",
+  //     url: "https://instagram191.p.rapidapi.com/v2/location/posts/",
+  //     params: {
+  //       location_id,
+  //     },
+  //     headers: {
+  //       "X-RapidAPI-Key": "052de0cae7msh9adc96399907ab8p1d1612jsn8ba69555e632",
+  //       "X-RapidAPI-Host": "instagram191.p.rapidapi.com",
+  //     },
+  //   });
+  //   console.log({ data });
+  //   return data;
+  // } catch (error) {
+  //   console.error({ error });
+  //   return error;
+  // }
+  console.log("trying to get data");
+  const options = {
+    method: "GET",
+    url: "https://instagram191.p.rapidapi.com/v2/location/posts/",
+    params: {
+      location_id: "378081362682024",
+    },
+    headers: {
+      "X-RapidAPI-Key": "052de0cae7msh9adc96399907ab8p1d1612jsn8ba69555e632",
+      "X-RapidAPI-Host": "instagram191.p.rapidapi.com",
+    },
+  };
+
+  try {
+    const response = await axios.request(options);
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};

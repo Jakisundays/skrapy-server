@@ -92,8 +92,14 @@ export interface FilteredUserScanParams extends UserRetrievalParams {
   filterProperty: "public_email" | "public_phone_number";
 }
 
-
-// export interface RetrieveAmountOfUsersParams {
-//   code_or_id_or_url: string;
-//   amount: number;
-// }
+export interface EmailDispatchInfo {
+  refresh_token: string;
+  access_token: string;
+  expires: number;
+  from: string;
+  to: string[];
+  subject: string;
+  content: string;
+  heading: string;
+  preview: string;
+}

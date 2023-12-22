@@ -1,12 +1,15 @@
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
-
+import { render } from "@react-email/render";
+import { TestingEmail } from "../templates/TestingEmail";
+import React from "react";
+import { EmailDispatchInfo } from "../types";
 const { OAuth2 } = google.auth;
 
 const oauth2Client = new OAuth2(
   Bun.env.GOOGLE_CLIENT_ID,
   Bun.env.GOOGLE_CLIENT_SECRET,
-  "http://localhost:3000/mail"
+  "http://localhost:3000/mail" // Este URL debe ser actualizado al punto de redirección deseado
 );
 
 export const retrieveAccessToken = async (code: string) => {
@@ -67,4 +70,57 @@ export const createTransport = async (
     },
   });
   return transporter;
+};
+
+export const dispatchEmailWithCredentials = async ({
+  refresh_token,
+  access_token,
+  expires,
+  from,
+  to,
+  subject,
+  content,
+  heading,
+  preview,
+}: EmailDispatchInfo) => {
+  console.log({
+    refresh_token,
+    access_token,
+    expires,
+    from,
+    to,
+    subject,
+    content,
+    heading,
+    preview,
+  });
+
+  try {
+    const transporter = await createTransport(
+      refresh_token,
+      access_token,
+      expires
+    );
+
+    const template = render(
+      React.createElement(TestingEmail, { content, heading, preview })
+    );
+    const options = {
+      from,
+      to,
+      subject,
+      html: template,
+    };
+    await transporter.sendMail(options);
+    return {
+      status: 200,
+      message: "Email sent successfully",
+    };
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return {
+      status: 500,
+      message: (error as any).message,
+    };
+  }
 };

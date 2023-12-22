@@ -137,13 +137,10 @@ export const retrieveUsersByHashtag = async ({
   hashtag: string;
   amount: number;
 }) => {
-  console.log({ hashtag, amount });
   try {
     let allUsers: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
     do {
-      console.log("trying to get data");
-      
       const { data }: any = await instaInstance.get("/hashtag", {
         params: {
           hashtag,

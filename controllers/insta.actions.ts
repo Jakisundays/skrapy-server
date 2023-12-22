@@ -140,33 +140,26 @@ export const retrieveUsersByHashtag = async ({
   try {
     let allUsers: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
-
-    while (paginationToken && allUsers.length < amount) {
+    do {
       const { data }: any = await instaInstance.get("/hashtag", {
         params: {
           hashtag,
         },
       });
-
       const nextPageToken = data.pagination_token;
-      const items = data.data.items;
-
-      const promises = items.map(async (item: any) => {
-        const filteredUsers: UserProfile[] = await retrieveAmountOfUsersByLikes(
-          {
-            code_or_id_or_url: item.id,
-            amount,
-          }
-        );
-        console.log({ filteredUsers });
-        allUsers = allUsers.concat(filteredUsers);
-      });
-
-      await Promise.all(promises);
-
+      const { items } = data.data;
+      for (const item in items) {
+        if (allUsers.length < amount) {
+          const filteredUsers: UserProfile[] =
+            await retrieveAmountOfUsersByLikes({
+              code_or_id_or_url: items[item].id,
+              amount,
+            });
+          allUsers = allUsers.concat(filteredUsers);
+        }
+      }
       paginationToken = nextPageToken;
-    }
-
+    } while (paginationToken && allUsers.length < amount);
     return allUsers.slice(0, amount);
   } catch (error) {
     console.error({ error });
@@ -386,18 +379,16 @@ export const retrieveAmountOfUsersByLikes = async ({
       paginationToken = nextPageToken;
     }
 
-    const userProfiles: UserProfile[] = await Promise.all(
-      users.slice(0, amount).map(async (user) => {
-        // Retrieve user profile information
-        const userInfo = await retrieveUserInfo(user.id);
-        // Throw an error if user profile is not found
-        if (!userInfo) {
-          throw new Error(`User not found: ${user.userName} (${user.id})`);
-        }
-        // Return the user profile information
-        return userInfo;
-      })
-    );
+    const userProfiles: UserProfile[] = (
+      await Promise.all(
+        users.slice(0, amount).map(async (user) => {
+          // Retrieve user profile information
+          const userInfo = await retrieveUserInfo(user.id);
+          // Return the user profile information or null
+          return userInfo;
+        })
+      )
+    ).filter((profile): profile is UserProfile => profile !== null);
 
     // Use Promise.all again to wait for all promises to resolve
     const filteredUserProfiles: UserProfile[] = await Promise.all(

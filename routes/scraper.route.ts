@@ -1,12 +1,12 @@
 import { Elysia, t } from "elysia";
 import {
-  getAllUsersByType,
-  getAmountOfUsers,
+  retrieveUserConnections,
+  getLimitedAmount,
   getCommentsOnPost,
   getLikersOfPost,
   retrieveUsersByHashtag,
-  retrieveAmountOfUsersByLikes,
-  scanUsersForFilteredProperty,
+  getLimitedLikes,
+  filterByProperties,
   retrieveUsersByComments,
 } from "../controllers/insta.actions";
 import axios from "axios";
@@ -16,14 +16,19 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
     body: t.Object({
       hashtag: t.String(),
       amount: t.Number(),
+      scraping_id: t.String(),
     }),
   })
-  .post("/retrieveUserConnections", ({ body }) => getAllUsersByType(body), {
-    body: t.Object({
-      idOrUsernameOrUrl: t.String(),
-      mode: t.Enum({ following: "following", followers: "followers" }),
-    }),
-  })
+  .post(
+    "/retrieveUserConnections",
+    ({ body }) => retrieveUserConnections(body),
+    {
+      body: t.Object({
+        idOrUsernameOrUrl: t.String(),
+        mode: t.Enum({ following: "following", followers: "followers" }),
+      }),
+    }
+  )
   .post("/likes", ({ body }) => getLikersOfPost(body.code_or_id_or_url), {
     body: t.Object({
       code_or_id_or_url: t.String(),
@@ -34,32 +39,31 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       code_or_id_or_url: t.String(),
     }),
   })
-  .post(
-    "/filterByProperties",
-    ({ body }) => scanUsersForFilteredProperty(body),
-    {
-      body: t.Object({
-        idOrUsernameOrUrl: t.String(),
-        amount: t.Number(),
-        mode: t.Enum({ following: "following", followers: "followers" }),
-        filterProperty: t.Enum({
-          public_email: "public_email",
-          public_phone_number: "public_phone_number",
-        }),
-      }),
-    }
-  )
-  .post("/getLimitedAmount", ({ body }) => getAmountOfUsers(body), {
+  .post("/filterByProperties", ({ body }) => filterByProperties(body), {
     body: t.Object({
       idOrUsernameOrUrl: t.String(),
       amount: t.Number(),
       mode: t.Enum({ following: "following", followers: "followers" }),
+      filterProperty: t.Enum({
+        public_email: "public_email",
+        public_phone_number: "public_phone_number",
+      }),
+      scraping_id: t.String(),
     }),
   })
-  .post("/getLimitedLikes", ({ body }) => retrieveAmountOfUsersByLikes(body), {
+  .post("/getLimitedAmount", ({ body }) => getLimitedAmount(body), {
+    body: t.Object({
+      idOrUsernameOrUrl: t.String(),
+      amount: t.Number(),
+      mode: t.Enum({ following: "following", followers: "followers" }),
+      scraping_id: t.String(),
+    }),
+  })
+  .post("/getLimitedLikes", ({ body }) => getLimitedLikes(body), {
     body: t.Object({
       code_or_id_or_url: t.String(),
       amount: t.Number(),
+      scraping_id: t.String(),
     }),
   })
   .post(
@@ -69,6 +73,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       body: t.Object({
         code_or_id_or_url: t.String(),
         amount: t.Number(),
+        scraping_id: t.String(),
       }),
     }
   )

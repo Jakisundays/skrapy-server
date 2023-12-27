@@ -22,11 +22,6 @@ export interface UserProfile extends User {
   external_url?: string;
 }
 
-export interface UserProfileWithFollowers extends UserProfile {
-  followers: User[];
-  following: User[];
-}
-
 export interface BasePost {
   id: string;
   caption: string;

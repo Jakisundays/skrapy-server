@@ -9,7 +9,7 @@ const { OAuth2 } = google.auth;
 const oauth2Client = new OAuth2(
   Bun.env.GOOGLE_CLIENT_ID,
   Bun.env.GOOGLE_CLIENT_SECRET,
-  "http://localhost:3000/mail" // Este URL debe ser actualizado al punto de redirección deseado
+  `${Bun.env.BASE_ROUTE}/emails/senders` // Este URL debe ser actualizado al punto de redirección deseado
 );
 
 export const retrieveAccessToken = async (code: string) => {
@@ -32,7 +32,8 @@ export const getGoogleAuthURL = async () => {
 export const createTransport = async (
   refreshToken: string,
   accessToken: string,
-  expires: number
+  expires: number,
+  user: string
 ) => {
   let newAccessToken = null;
   const expirationThreshold = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -62,7 +63,7 @@ export const createTransport = async (
     secure: true,
     auth: {
       type: "OAuth2",
-      user: "jacobguillermooo@gmail.com",
+      user,
       clientId: Bun.env.GOOGLE_CLIENT_ID,
       clientSecret: Bun.env.GOOGLE_CLIENT_SECRET,
       refreshToken,
@@ -99,12 +100,14 @@ export const dispatchEmailWithCredentials = async ({
     const transporter = await createTransport(
       refresh_token,
       access_token,
-      expires
+      expires,
+      from
     );
 
     const template = render(
       React.createElement(TestingEmail, { content, heading, preview })
     );
+
     const options = {
       from,
       to,

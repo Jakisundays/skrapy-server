@@ -8,7 +8,7 @@ import {
 } from "../types";
 import { instaInstance } from "../utils/instaInstance";
 
-export const getAllUsersByType = async ({
+export const retrieveUserConnections = async ({
   mode,
   idOrUsernameOrUrl,
 }: {
@@ -208,7 +208,7 @@ export const retrieveUserInfo = async (
   }
 };
 
-export const scanUsersForFilteredProperty = async ({
+export const filterByProperties = async ({
   idOrUsernameOrUrl,
   amount,
   mode,
@@ -274,7 +274,7 @@ export const scanUsersForFilteredProperty = async ({
   }
 };
 
-export const getAmountOfUsers = async ({
+export const getLimitedAmount = async ({
   idOrUsernameOrUrl,
   amount,
   mode,
@@ -345,7 +345,7 @@ export const getAmountOfUsers = async ({
   }
 };
 
-export const retrieveAmountOfUsersByLikes = async ({
+export const getLimitedLikes = async ({
   code_or_id_or_url,
   amount,
 }: {

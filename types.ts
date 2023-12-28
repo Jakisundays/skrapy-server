@@ -29,7 +29,7 @@ export interface Leads extends User {
   public_phone_number?: string;
   public_email?: string;
   external_url?: string;
-  scraping_id: string;
+  scraping_id: number;
 }
 
 export interface BasePost {
@@ -91,7 +91,7 @@ export interface UserRetrievalParams {
   idOrUsernameOrUrl: string;
   amount: number;
   mode: "following" | "followers";
-  scraping_id: string;
+  scraping_id: number;
 }
 
 export interface FilteredUserScanParams extends UserRetrievalParams {

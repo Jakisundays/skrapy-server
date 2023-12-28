@@ -22,7 +22,7 @@ export const createUserLeadsFromProfile = (
     public_email,
     external_url,
   }: UserProfile,
-  scraping_id: string
+  scraping_id: number
 ): Leads => ({
   id,
   userName,
@@ -41,23 +41,53 @@ export const createUserLeadsFromProfile = (
 
 export const turnUserProfilesIntoLeads = (
   users: UserProfile[],
-  scraping_id: string
+  scraping_id: number
 ): Leads[] =>
   users.map((user) => createUserLeadsFromProfile(user, scraping_id));
 
 export const addLeadsToDatabase = async (leads: Leads[]) => {
-  console.log({ leads });
   try {
     const { data, error } = await supabase.from("leads").insert(leads).select();
     if (error) {
       console.error({ error });
       throw new Error(error.message);
     }
-    console.log({ data });
     console.log("Leads added to database successfully");
 
     return true;
   } catch (error) {
     return false;
+  }
+};
+
+export const countLeadsByContactInfo = (
+  leads: Leads[]
+): { emailCount: number; phoneCount: number } => {
+  let emailCount = leads.filter((lead) => lead.public_email).length;
+  let phoneCount = leads.filter(
+    (lead) => lead.public_phone_country_code && lead.public_phone_number
+  ).length;
+  return { emailCount, phoneCount };
+};
+
+export const editScrapingContacts = async (
+  emailCount: number,
+  phoneCount: number,
+  scraping_id: number
+) => {
+  try {
+    const { error } = await supabase
+      .from("scrapings")
+      .update({ phone_numbers: phoneCount, emails: emailCount })
+      .eq("id", scraping_id)
+      .select();
+    if (error) {
+      console.error({ error });
+      throw new Error(error.message);
+    }
+    console.log(`Scraping row with ID: ${scraping_id} has been successfully modified 🎉`);
+  } catch (error) {
+    console.error(error);
+    throw new Error((error as any).message);
   }
 };

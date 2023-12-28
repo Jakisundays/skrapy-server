@@ -16,7 +16,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
     body: t.Object({
       hashtag: t.String(),
       amount: t.Number(),
-      scraping_id: t.String(),
+      scraping_id: t.Number(),
     }),
   })
   .post(
@@ -48,7 +48,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
         public_email: "public_email",
         public_phone_number: "public_phone_number",
       }),
-      scraping_id: t.String(),
+      scraping_id: t.Number(),
     }),
   })
   .post("/getLimitedAmount", ({ body }) => getLimitedAmount(body), {
@@ -56,14 +56,14 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       idOrUsernameOrUrl: t.String(),
       amount: t.Number(),
       mode: t.Enum({ following: "following", followers: "followers" }),
-      scraping_id: t.String(),
+      scraping_id: t.Number(),
     }),
   })
   .post("/getLimitedLikes", ({ body }) => getLimitedLikes(body), {
     body: t.Object({
       code_or_id_or_url: t.String(),
       amount: t.Number(),
-      scraping_id: t.String(),
+      scraping_id: t.Number(),
     }),
   })
   .post(
@@ -73,7 +73,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       body: t.Object({
         code_or_id_or_url: t.String(),
         amount: t.Number(),
-        scraping_id: t.String(),
+        scraping_id: t.Number(),
       }),
     }
   )

@@ -86,8 +86,17 @@ POST http://localhost:8080/api/scraper/getLimitedAmount
 Content-Type: application/json
 
 {
-     "idOrUsernameOrUrl": "leomessi",
+     "idOrUsernameOrUrl": "ibaillanos",
      "amount": 100,
      "mode": "followers",
-     "scraping_id": "82"
+     "scraping_id": 121
+}
+
+###
+POST https://skrapy-server.onrender.com/api/scraper/retrieveUsersByHashtag
+Content-Type: application/json
+
+{
+     "hashtag": "oreo",
+     "amount": 4
 }

@@ -9,6 +9,8 @@ import {
 } from "../types";
 import {
   addLeadsToDatabase,
+  countLeadsByContactInfo,
+  editScrapingContacts,
   getUsersWithContactInfo,
   turnUserProfilesIntoLeads,
 } from "../utils/database-helpers";
@@ -157,11 +159,10 @@ export const retrieveUsersByHashtag = async ({
       const { items } = data.data;
       for (const item in items) {
         if (allUsers.length < amount) {
-          const filteredUsers: UserProfile[] =
-            await retrieveAmountOfUsersByLikes({
-              code_or_id_or_url: items[item].id,
-              amount,
-            });
+          const filteredUsers: UserProfile[] = await getLimitedLikes({
+            code_or_id_or_url: items[item].id,
+            amount,
+          });
           allUsers = allUsers.concat(filteredUsers);
         }
       }
@@ -330,23 +331,9 @@ export const getLimitedAmount = async ({
       if (userInfo) {
         userProfiles.push(userInfo);
       } else {
-        console.log(
-          `User profile not found for user with ID: ${users[i].id}`
-        );
+        console.log(`User profile not found for user with ID: ${users[i].id}`);
       }
     }
-
-    // Concurrently retrieve user profiles using Promise.all
-    // const userProfiles: (UserProfile | null)[] = await Promise.all(
-    //   users.slice(0, amount).map(async (user) => {
-    //     // Retrieve user profile information
-    //     const userInfo = await retrieveUserInfo(user.id);
-
-    //     // Return the user profile information
-    //     return userInfo;
-    //   })
-
-    // );
 
     const usersWithContactInfo = getUsersWithContactInfo(userProfiles);
     const leads: Leads[] = turnUserProfilesIntoLeads(
@@ -359,11 +346,10 @@ export const getLimitedAmount = async ({
       throw new Error("Error saving leads to database");
     }
 
-    // Log successful user profiles retrieval
-    console.log(
-      "User profile retrieval successful. Total profiles:",
-      userProfiles.length
-    );
+    const { emailCount, phoneCount } = countLeadsByContactInfo(leads);
+
+    await editScrapingContacts(emailCount, phoneCount, scraping_id);
+
     // Return the user profiles
     return userProfiles;
   } catch (error) {

@@ -2,10 +2,16 @@ import {
   BaseUser,
   Comment,
   FilteredUserScanParams,
+  Leads,
   User,
   UserProfile,
   UserRetrievalParams,
 } from "../types";
+import {
+  addLeadsToDatabase,
+  getUsersWithContactInfo,
+  turnUserProfilesIntoLeads,
+} from "../utils/database-helpers";
 import { instaInstance } from "../utils/instaInstance";
 
 export const retrieveUserConnections = async ({
@@ -278,7 +284,9 @@ export const getLimitedAmount = async ({
   idOrUsernameOrUrl,
   amount,
   mode,
+  scraping_id,
 }: UserRetrievalParams): Promise<UserProfile[]> => {
+  console.log({ idOrUsernameOrUrl, amount, mode, scraping_id });
   // Initialize an array to store user profiles
   const users: UserProfile[] = [];
   // Initialize pagination token to undefined
@@ -315,20 +323,41 @@ export const getLimitedAmount = async ({
       // Update pagination token for the next iteration
       paginationToken = nextPageToken;
     }
+    const userProfiles: UserProfile[] = [];
+
+    for (let i = 0; userProfiles.length < amount; i++) {
+      const userInfo = await retrieveUserInfo(users[i].id);
+      if (userInfo) {
+        userProfiles.push(userInfo);
+      } else {
+        console.log(
+          `User profile not found for user with ID: ${users[i].id}`
+        );
+      }
+    }
 
     // Concurrently retrieve user profiles using Promise.all
-    const userProfiles: UserProfile[] = await Promise.all(
-      users.slice(0, amount).map(async (user) => {
-        // Retrieve user profile information
-        const userInfo = await retrieveUserInfo(user.id);
-        // Throw an error if user profile is not found
-        if (!userInfo) {
-          throw new Error(`User not found: ${user.userName} (${user.id})`);
-        }
-        // Return the user profile information
-        return userInfo;
-      })
+    // const userProfiles: (UserProfile | null)[] = await Promise.all(
+    //   users.slice(0, amount).map(async (user) => {
+    //     // Retrieve user profile information
+    //     const userInfo = await retrieveUserInfo(user.id);
+
+    //     // Return the user profile information
+    //     return userInfo;
+    //   })
+
+    // );
+
+    const usersWithContactInfo = getUsersWithContactInfo(userProfiles);
+    const leads: Leads[] = turnUserProfilesIntoLeads(
+      usersWithContactInfo,
+      scraping_id
     );
+    const leadsSaved = await addLeadsToDatabase(leads);
+
+    if (!leadsSaved) {
+      throw new Error("Error saving leads to database");
+    }
 
     // Log successful user profiles retrieval
     console.log(

@@ -43,15 +43,7 @@ Content-Type: application/json
      "mode": "followers",
      "filterProperty": "public_email"
 }
-###
-POST http://localhost:8080/api/scraper/getLimitedAmount
-Content-Type: application/json
 
-{
-     "idOrUsernameOrUrl": "leomessi",
-     "amount": 4,
-     "mode": "followers"
-}
 ###
 POST http://localhost:8080/api/scraper/getLimitedLikes
 Content-Type: application/json
@@ -87,4 +79,15 @@ Content-Type: application/json
 {
      "hashtag": "oreo",
      "amount": 4
+}
+
+###
+POST http://localhost:8080/api/scraper/getLimitedAmount
+Content-Type: application/json
+
+{
+     "idOrUsernameOrUrl": "leomessi",
+     "amount": 100,
+     "mode": "followers",
+     "scraping_id": "82"
 }

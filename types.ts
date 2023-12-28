@@ -22,6 +22,16 @@ export interface UserProfile extends User {
   external_url?: string;
 }
 
+export interface Leads extends User {
+  follower_count: number;
+  following_count: number;
+  public_phone_country_code?: string;
+  public_phone_number?: string;
+  public_email?: string;
+  external_url?: string;
+  scraping_id: string;
+}
+
 export interface BasePost {
   id: string;
   caption: string;
@@ -81,6 +91,7 @@ export interface UserRetrievalParams {
   idOrUsernameOrUrl: string;
   amount: number;
   mode: "following" | "followers";
+  scraping_id: string;
 }
 
 export interface FilteredUserScanParams extends UserRetrievalParams {

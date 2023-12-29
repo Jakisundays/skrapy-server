@@ -32,7 +32,7 @@ Content-Type: application/json
     "code_or_id_or_url": "BZhRIWQH3tk"
 }
 ###
-GET http://localhost:8080/api/auth
+GET http://localhost:8080/api/mail
 ###
 POST http://localhost:8080/api/scraper/filterByProperties
 Content-Type: application/json

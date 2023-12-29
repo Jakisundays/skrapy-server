@@ -52,6 +52,7 @@ export const getGoogleAuthURL = async () => {
       "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/userinfo.email",
     ],
+    prompt: "consent",
   });
   return url;
 };

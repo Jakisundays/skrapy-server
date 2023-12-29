@@ -9,16 +9,10 @@ import {
   filterByProperties,
   retrieveUsersByComments,
 } from "../controllers/insta.actions";
-import axios from "axios";
 
 const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
-  .post("/retrieveUsersByHashtag", ({ body }) => retrieveUsersByHashtag(body), {
-    body: t.Object({
-      hashtag: t.String(),
-      amount: t.Number(),
-      scraping_id: t.Number(),
-    }),
-  })
+  // Rutas sin amount
+  // Buscar todos los seguidores/seguidos de un usuario 🕵️‍♂️👥
   .post(
     "/retrieveUserConnections",
     ({ body }) => retrieveUserConnections(body),
@@ -29,16 +23,28 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       }),
     }
   )
+  // Buscar todos los usuarios que dieron "me gusta" a una publicación ❤️
   .post("/likes", ({ body }) => getLikersOfPost(body.code_or_id_or_url), {
     body: t.Object({
       code_or_id_or_url: t.String(),
     }),
   })
+  // Buscar todos los usuarios que comentaron en una publicación 💬
   .post("/comments", ({ body }) => getCommentsOnPost(body.code_or_id_or_url), {
     body: t.Object({
       code_or_id_or_url: t.String(),
     }),
   })
+  // Rutas con amount
+  // Buscar usuarios usando un hashtag 🕵️‍♂️🔍
+  .post("/retrieveUsersByHashtag", ({ body }) => retrieveUsersByHashtag(body), {
+    body: t.Object({
+      hashtag: t.String(),
+      amount: t.Number(),
+      scraping_id: t.Number(),
+    }),
+  })
+  // Buscar cierta cantidad de usuarios que cumplan ciertas propiedades 🕵️‍♂️🔍
   .post("/filterByProperties", ({ body }) => filterByProperties(body), {
     body: t.Object({
       idOrUsernameOrUrl: t.String(),
@@ -51,6 +57,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       scraping_id: t.Number(),
     }),
   })
+  // Buscar cierta cantidad de seguidores/seguidos de un usuario 🕵️‍♂️👥🔍
   .post("/getLimitedAmount", ({ body }) => getLimitedAmount(body), {
     body: t.Object({
       idOrUsernameOrUrl: t.String(),
@@ -59,6 +66,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       scraping_id: t.Number(),
     }),
   })
+  // Buscar cierta cantidad de usuarios que dieron "me gusta" en un post 🕵️‍♂️❤️🔍
   .post("/getLimitedLikes", ({ body }) => getLimitedLikes(body), {
     body: t.Object({
       code_or_id_or_url: t.String(),
@@ -66,6 +74,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
       scraping_id: t.Number(),
     }),
   })
+  // Buscar cierta cantidad de usuarios que comentaron en un post 🕵️‍♂️💬🔍
   .post(
     "/retrieveUsersByComments",
     ({ body }) => retrieveUsersByComments(body),
@@ -76,48 +85,7 @@ const scraperRoutes = new Elysia({ prefix: "/api/scraper" })
         scraping_id: t.Number(),
       }),
     }
-  )
-  .post("/retreiveUsersByLoc", async () => await retreiveUsersByLoc());
+  );
+// .post("/retreiveUsersByLoc", async () => await retreiveUsersByLoc()); GEO LOC PENDING
 
 export default scraperRoutes;
-
-const retreiveUsersByLoc = async () => {
-  // try {
-  //   console.log("trying to get data");
-  //   const data = await axios.request({
-  //     method: "GET",
-  //     url: "https://instagram191.p.rapidapi.com/v2/location/posts/",
-  //     params: {
-  //       location_id,
-  //     },
-  //     headers: {
-  //       "X-RapidAPI-Key": "052de0cae7msh9adc96399907ab8p1d1612jsn8ba69555e632",
-  //       "X-RapidAPI-Host": "instagram191.p.rapidapi.com",
-  //     },
-  //   });
-  //   console.log({ data });
-  //   return data;
-  // } catch (error) {
-  //   console.error({ error });
-  //   return error;
-  // }
-  console.log("trying to get data");
-  const options = {
-    method: "GET",
-    url: "https://instagram191.p.rapidapi.com/v2/location/posts/",
-    params: {
-      location_id: "378081362682024",
-    },
-    headers: {
-      "X-RapidAPI-Key": "052de0cae7msh9adc96399907ab8p1d1612jsn8ba69555e632",
-      "X-RapidAPI-Host": "instagram191.p.rapidapi.com",
-    },
-  };
-
-  try {
-    const response = await axios.request(options);
-    console.log(response.data);
-  } catch (error) {
-    console.error(error);
-  }
-};

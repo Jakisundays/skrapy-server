@@ -38,10 +38,11 @@ POST http://localhost:8080/api/scraper/filterByProperties
 Content-Type: application/json
 
 {
-     "idOrUsernameOrUrl": "leomessi",
-     "amount": 1,
+     "idOrUsernameOrUrl": "ibaillanos",
+     "amount": 2,
      "mode": "followers",
-     "filterProperty": "public_email"
+     "filterProperty": "public_email",
+     "scraping_id": 143
 }
 
 ###
@@ -58,31 +59,14 @@ Content-Type: application/json
 
 {
      "code_or_id_or_url": "https://www.instagram.com/p/C1HwYFlNeUO/",
-     "amount": 4
+     "amount": 4,
+     "scraping_id": 143
 }
 ###
 POST http://localhost:8080/api/scraper/retreiveUsersByLoc
 
 ###
-POST http://localhost:8080/api/scraper/retrieveUsersByHashtag
-Content-Type: application/json
-
-{
-     "hashtag": "oreo",
-     "amount": 4
-}
-
-###
-POST https://skrapy-server.onrender.com/api/scraper/retrieveUsersByHashtag
-Content-Type: application/json
-
-{
-     "hashtag": "oreo",
-     "amount": 4
-}
-
-###
-POST http://localhost:8080/api/scraper/getLimitedAmount
+POST https://skrapy-server.onrender.com/api/scraper/getLimitedAmount
 Content-Type: application/json
 
 {
@@ -91,6 +75,16 @@ Content-Type: application/json
      "mode": "followers",
      "scraping_id": 121
 }
+###
+POST http://localhost:8080/api/scraper/getLimitedAmount
+Content-Type: application/json
+
+{
+     "idOrUsernameOrUrl": "ibaillanos",
+     "amount": 32,
+     "mode": "followers",
+     "scraping_id": 143
+}
 
 ###
 POST https://skrapy-server.onrender.com/api/scraper/retrieveUsersByHashtag
@@ -99,4 +93,13 @@ Content-Type: application/json
 {
      "hashtag": "oreo",
      "amount": 4
+}
+###
+POST http://localhost:8080/api/scraper/retrieveUsersByHashtag
+Content-Type: application/json
+
+{
+     "hashtag": "bitcoin",
+     "amount": 30,
+     "scraping_id": 143
 }

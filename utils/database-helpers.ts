@@ -47,16 +47,15 @@ export const turnUserProfilesIntoLeads = (
 
 export const addLeadsToDatabase = async (leads: Leads[]) => {
   try {
-    const { data, error } = await supabase.from("leads").insert(leads).select();
+    const { error } = await supabase.from("leads").insert(leads).select();
     if (error) {
       console.error({ error });
       throw new Error(error.message);
     }
     console.log("Leads added to database successfully");
-
-    return true;
   } catch (error) {
-    return false;
+    console.error(error);
+    throw new Error("Failed to add leads to the database");
   }
 };
 

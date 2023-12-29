@@ -3,6 +3,7 @@ import {
   createTransport,
   dispatchEmailWithCredentials,
   getGoogleAuthURL,
+  getGoogleUserDetails,
   retrieveAccessToken,
 } from "../controllers/mail.actions";
 
@@ -13,6 +14,15 @@ const mailRoutes = new Elysia({ prefix: "/api/mail" })
       code: t.String(),
     }),
   })
+  .post(
+    "/getGoogleUserDetails",
+    ({ body }) => getGoogleUserDetails(body.refreshToken),
+    {
+      body: t.Object({
+        refreshToken: t.String(),
+      }),
+    }
+  )
   .post(
     "/dispatchEmailWithCredentials",
     ({ body }) => dispatchEmailWithCredentials(body),

@@ -11,5 +11,5 @@ const axiosInstance: AxiosInstance = axios.create({
 
 export const instaInstance = axiosRateLimit(axiosInstance, {
   maxRequests: 110,
-  perMilliseconds: 60 * 1000,
+  perMilliseconds: 65 * 1000,
 });

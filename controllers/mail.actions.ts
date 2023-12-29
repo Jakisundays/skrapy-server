@@ -18,13 +18,40 @@ export const retrieveAccessToken = async (code: string) => {
     return tokens;
   } catch (error) {
     console.error({ error });
+    return error;
+  }
+};
+
+export const getGoogleUserDetails = async (refreshToken: string) => {
+  try {
+    oauth2Client.setCredentials({
+      refresh_token: refreshToken,
+    });
+    const people = google.people({ version: "v1", auth: oauth2Client });
+    const { data }: any = await people.people.get({
+      resourceName: "people/me",
+      personFields: "emailAddresses,names,photos",
+    });
+
+    const full_name = data.names[0].displayName;
+    const email = data.emailAddresses[0].value;
+    const avatar_url = data.photos[0].url;
+
+    return { full_name, email, avatar_url };
+  } catch (error) {
+    console.error("Error retrieving user info:", error);
+    throw error;
   }
 };
 
 export const getGoogleAuthURL = async () => {
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
-    scope: "https://mail.google.com/",
+    scope: [
+      "https://mail.google.com/",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/userinfo.email",
+    ],
   });
   return url;
 };

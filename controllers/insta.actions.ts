@@ -141,9 +141,11 @@ export const getCommentsOnPost = async (code_or_id_or_url: string) => {
 export const retrieveUsersByHashtag = async ({
   hashtag,
   amount,
+  scraping_id,
 }: {
   hashtag: string;
   amount: number;
+  scraping_id: number;
 }) => {
   try {
     let allUsers: UserProfile[] = [];
@@ -168,7 +170,22 @@ export const retrieveUsersByHashtag = async ({
       }
       paginationToken = nextPageToken;
     } while (paginationToken && allUsers.length < amount);
-    return allUsers.slice(0, amount);
+
+    const usersWithContactInfo = getUsersWithContactInfo(allUsers);
+    const leads: Leads[] = turnUserProfilesIntoLeads(
+      usersWithContactInfo,
+      scraping_id
+    );
+
+    await addLeadsToDatabase(leads);
+
+    const { emailCount, phoneCount } = countLeadsByContactInfo(leads);
+
+    await editScrapingContacts(emailCount, phoneCount, scraping_id);
+
+    console.log({ lenght: allUsers.length });
+
+    return allUsers;
   } catch (error) {
     console.error({ error });
     return new Response("Bad request", { status: 500 });
@@ -219,7 +236,8 @@ export const filterByProperties = async ({
   idOrUsernameOrUrl,
   amount,
   mode,
-  filterProperty = "public_email",
+  filterProperty,
+  scraping_id,
 }: FilteredUserScanParams) => {
   try {
     let usersWithFilteredProperty: UserProfile[] = [];
@@ -265,14 +283,33 @@ export const filterByProperties = async ({
         )
       ).filter(Boolean) as UserProfile[];
 
-      usersWithFilteredProperty = usersWithFilteredProperty.concat(
-        filteredUsersWithFilteredProperty
-      );
+      console.log({ filteredUsersWithFilteredProperty });
 
-      console.log({ usersWithFilteredProperty });
+      if (filteredUsersWithFilteredProperty) {
+        filteredUsersWithFilteredProperty.forEach((user) =>
+          usersWithFilteredProperty.push(user)
+        );
+      }
+      // usersWithFilteredProperty.concat(filteredUsersWithFilteredProperty);
+
+      console.log({
+        usersWithFilteredProperty,
+        lenght: usersWithFilteredProperty.length,
+      });
 
       paginationToken = nextPageToken;
     } while (paginationToken && usersWithFilteredProperty.length < amount);
+
+    const leads: Leads[] = turnUserProfilesIntoLeads(
+      usersWithFilteredProperty,
+      scraping_id
+    );
+
+    await addLeadsToDatabase(leads);
+
+    const { emailCount, phoneCount } = countLeadsByContactInfo(leads);
+
+    await editScrapingContacts(emailCount, phoneCount, scraping_id);
 
     return usersWithFilteredProperty;
   } catch (error) {
@@ -289,13 +326,13 @@ export const getLimitedAmount = async ({
 }: UserRetrievalParams): Promise<UserProfile[]> => {
   console.log({ idOrUsernameOrUrl, amount, mode, scraping_id });
   // Initialize an array to store user profiles
-  const users: UserProfile[] = [];
+  const userProfiles: UserProfile[] = [];
   // Initialize pagination token to undefined
   let paginationToken: string | undefined = undefined;
 
   try {
     // Loop until the desired amount of users is reached or there is no more pagination token
-    while (users.length < amount && paginationToken !== null) {
+    while (userProfiles.length < amount && paginationToken !== null) {
       // Make an API request to get user data
       const { data }: any = await instaInstance.get(`/${mode}`, {
         params: {
@@ -309,7 +346,7 @@ export const getLimitedAmount = async ({
       const { items } = data.data;
 
       // Filter and map user data to UserProfile type
-      const filteredUsers: UserProfile[] = items
+      const filteredUsers: User[] = items
         .filter((user: any) => !user.is_private)
         .map((user: any) => ({
           id: user.id,
@@ -319,32 +356,32 @@ export const getLimitedAmount = async ({
           is_private: user.is_private,
         }));
 
-      // Add filtered users to the users array
-      users.push(...filteredUsers);
+      for (const user of filteredUsers) {
+        const userInfo = await retrieveUserInfo(user.id);
+        if (userInfo) {
+          userProfiles.push(userInfo);
+        } else {
+          console.log(
+            `User profile not found for user with USERNAME: ${user.userName}`
+          );
+        }
+
+        // Check if the desired amount of users has been reached
+        if (userProfiles.length >= amount) {
+          break; // Exit the loop if the desired amount has been reached
+        }
+      }
+
       // Update pagination token for the next iteration
       paginationToken = nextPageToken;
     }
-    const userProfiles: UserProfile[] = [];
-
-    for (let i = 0; userProfiles.length < amount; i++) {
-      const userInfo = await retrieveUserInfo(users[i].id);
-      if (userInfo) {
-        userProfiles.push(userInfo);
-      } else {
-        console.log(`User profile not found for user with ID: ${users[i].id}`);
-      }
-    }
-
     const usersWithContactInfo = getUsersWithContactInfo(userProfiles);
     const leads: Leads[] = turnUserProfilesIntoLeads(
       usersWithContactInfo,
       scraping_id
     );
-    const leadsSaved = await addLeadsToDatabase(leads);
 
-    if (!leadsSaved) {
-      throw new Error("Error saving leads to database");
-    }
+    await addLeadsToDatabase(leads);
 
     const { emailCount, phoneCount } = countLeadsByContactInfo(leads);
 
@@ -363,55 +400,74 @@ export const getLimitedAmount = async ({
 export const getLimitedLikes = async ({
   code_or_id_or_url,
   amount,
+  scraping_id,
 }: {
   code_or_id_or_url: string;
   amount: number;
+  scraping_id?: number;
 }): Promise<UserProfile[]> => {
-  // Initialize an array to store user profiles
-  const users: User[] = [];
-  // Initialize pagination token to undefined
+  const userProfiles: UserProfile[] = [];
   let paginationToken: string | undefined = undefined;
+
   try {
-    while (users.length < amount && paginationToken !== null) {
+    while (userProfiles.length < amount && paginationToken !== null) {
       const { data }: any = await instaInstance.get("/likes", {
         params: {
           code_or_id_or_url,
           pagination_token: paginationToken,
         },
       });
+
       const nextPageToken = data.pagination_token;
       const { items } = data.data;
-      const userList: User[] = items
+      const filteredUsers: User[] = items
         .filter((user: any) => !user.is_private)
         .map((user: any) => ({
-          full_name: user.full_name,
           id: user.id,
-          profile_pic_url: user.profile_pic_url,
-          is_verified: user.is_verified,
           userName: user.username,
+          full_name: user.full_name,
+          profile_pic_url: user.profile_pic_url,
           is_private: user.is_private,
         }));
-      users.push(...userList);
+
+      for (const user of filteredUsers) {
+        const userInfo = await retrieveUserInfo(user.id);
+        if (userInfo) {
+          userProfiles.push(userInfo);
+        } else {
+          console.log(
+            `User profile not found for user with USERNAME: ${user.userName}`
+          );
+        }
+
+        console.log({ userProfiles: userProfiles.length });
+        // Check if the desired amount of users has been reached
+        if (userProfiles.length >= amount) {
+          break; // Exit the loop if the desired amount has been reached
+        }
+      }
+
+      // Update pagination token for the next iteration
       paginationToken = nextPageToken;
     }
+    if (scraping_id) {
+      console.log("saving leads on database");
+      const usersWithContactInfo = getUsersWithContactInfo(userProfiles);
+      const leads: Leads[] = turnUserProfilesIntoLeads(
+        usersWithContactInfo,
+        scraping_id
+      );
 
-    const userProfiles: UserProfile[] = (
-      await Promise.all(
-        users.slice(0, amount).map(async (user) => {
-          // Retrieve user profile information
-          const userInfo = await retrieveUserInfo(user.id);
-          // Return the user profile information or null
-          return userInfo;
-        })
-      )
-    ).filter((profile): profile is UserProfile => profile !== null);
+      await addLeadsToDatabase(leads);
 
-    // Use Promise.all again to wait for all promises to resolve
-    const filteredUserProfiles: UserProfile[] = await Promise.all(
-      userProfiles.filter((profile: UserProfile | null) => profile !== null)
-    );
+      const { emailCount, phoneCount } = countLeadsByContactInfo(leads);
 
-    return filteredUserProfiles;
+      await editScrapingContacts(emailCount, phoneCount, scraping_id);
+    } else {
+      console.log("Scraping_id missing, not saving in the database. 🚫💾");
+    }
+    console.log({ userProfilesLenght: userProfiles.length });
+    return userProfiles;
   } catch (error) {
     console.error({ error });
     // Re-throw the error for higher-level error handling
@@ -422,14 +478,15 @@ export const getLimitedLikes = async ({
 export const retrieveUsersByComments = async ({
   code_or_id_or_url,
   amount,
+  scraping_id,
 }: {
   code_or_id_or_url: string;
   amount: number;
+  scraping_id: number;
 }) => {
   let users: User[] = [];
   let userProfiles: UserProfile[] = [];
   let paginationToken: string | undefined = undefined;
-  let allComments: Comment[] = [];
   try {
     do {
       const { data }: any = await instaInstance.get("/comments", {
@@ -438,9 +495,9 @@ export const retrieveUsersByComments = async ({
       const nextPageToken = data.pagination_token;
       const { items } = data.data;
 
-      const comments: Comment[] = items
+      items
         .filter((comment: any) => !comment.user.is_private)
-        .map(async (comment: any) => {
+        .forEach(async (comment: any) => {
           const newComment = {
             id: comment.id,
             child_comment_count: comment.child_comment_count,
@@ -469,13 +526,22 @@ export const retrieveUsersByComments = async ({
           }
           return newComment;
         });
-      allComments = allComments.concat(comments);
+
       paginationToken = nextPageToken;
     } while (paginationToken && users.length < amount);
     if (users.length < amount) {
       console.log("Not enough public users found.");
     }
-    console.log({ userProfiles, legnht: userProfiles.length });
+    const usersWithContactInfo = getUsersWithContactInfo(userProfiles);
+    const leads: Leads[] = turnUserProfilesIntoLeads(
+      usersWithContactInfo,
+      scraping_id
+    );
+
+    await addLeadsToDatabase(leads);
+    const { emailCount, phoneCount } = countLeadsByContactInfo(leads);
+    await editScrapingContacts(emailCount, phoneCount, scraping_id);
+
     return userProfiles;
   } catch (error) {
     console.error({ error });

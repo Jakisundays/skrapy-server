@@ -11,132 +11,12 @@ import {
   addLeadsToDatabase,
   countLeadsByContactInfo,
   editScrapingContacts,
+  getUserIDByScrapingID,
   getUsersWithContactInfo,
+  spendCredits,
   turnUserProfilesIntoLeads,
 } from "../utils/database-helpers";
 import { instaInstance } from "../utils/instaInstance";
-
-export const retrieveUserConnections = async ({
-  mode,
-  idOrUsernameOrUrl,
-}: {
-  idOrUsernameOrUrl: string;
-  mode: "followers" | "following";
-}) => {
-  try {
-    let allUsers: UserProfile[] = [];
-    let paginationToken: string | undefined = undefined;
-
-    do {
-      const { data }: any = await instaInstance.get(`/${mode}`, {
-        params: {
-          username_or_id_or_url: idOrUsernameOrUrl,
-          pagination_token: paginationToken,
-        },
-      });
-
-      const nextPageToken = data.pagination_token;
-      const { items } = data.data;
-
-      const filteredUsers: User[] = items
-        .filter((user: any) => !user.is_private)
-        .map((user: any) => ({
-          id: user.id,
-          userName: user.username,
-          full_name: user.full_name,
-          profile_pic_url: user.profile_pic_url,
-          is_verified: user.is_verified,
-          is_private: user.is_private,
-        }));
-
-      const usersWithInfo: UserProfile[] = await Promise.all(
-        filteredUsers.map(async (user: User) => {
-          const userInfo = await retrieveUserInfo(user.id);
-          if (!userInfo) {
-            throw new Error("No se pudo obtener la información del usuario.");
-          }
-          return userInfo;
-        })
-      );
-
-      allUsers = allUsers.concat(usersWithInfo);
-      paginationToken = nextPageToken;
-    } while (paginationToken);
-    return allUsers;
-  } catch (error) {
-    console.error({ error });
-    return new Response("Bad request", { status: 500 });
-  }
-};
-
-export const getLikersOfPost = async (code_or_id_or_url: string) => {
-  try {
-    let allUsers: User[] = [];
-    let paginationToken: string | undefined = undefined;
-    do {
-      const { data }: any = await instaInstance.get("/likes", {
-        params: { code_or_id_or_url, pagination_token: paginationToken },
-      });
-      const nextPageToken = data.pagination_token;
-      const { items } = data.data;
-      const userList: User[] = items
-        .filter((user: any) => !user.is_private)
-        .map((user: any) => ({
-          full_name: user.full_name,
-          id: user.id,
-          profile_pic_url: user.profile_pic_url,
-          is_verified: user.is_verified,
-          userName: user.username,
-          is_private: user.is_private,
-        }));
-      allUsers = allUsers.concat(userList);
-      paginationToken = nextPageToken;
-    } while (paginationToken);
-    // console.log({ length: allUsers.length });
-    return allUsers;
-  } catch (error) {
-    console.error({ error });
-    return new Response("Bad request", { status: 500 });
-  }
-};
-
-export const getCommentsOnPost = async (code_or_id_or_url: string) => {
-  console.log({ code_or_id_or_url });
-  try {
-    let allComments: Comment[] = [];
-    let paginationToken: string | undefined = undefined;
-    let totalComments;
-    do {
-      const { data }: any = await instaInstance.get("/comments", {
-        params: { code_or_id_or_url, pagination_token: paginationToken },
-      });
-      const nextPageToken = data.pagination_token;
-      const { items, total } = data.data;
-      totalComments = total;
-      const comments: Comment[] = items.map((comment: any) => ({
-        id: comment.id,
-        child_comment_count: comment.child_comment_count,
-        like_count: comment.like_count,
-        created_at_utc: comment.created_at_utc,
-        text: comment.text,
-        user: {
-          full_name: comment.user.full_name,
-          userName: comment.user.username,
-          id: comment.user.id,
-          profile_pic_url: comment.user.profile_pic_url,
-          is_verified: comment.user.is_verified,
-          is_private: comment.user.is_private,
-        },
-      }));
-      allComments = allComments.concat(comments);
-      paginationToken = nextPageToken;
-    } while (paginationToken);
-    return allComments;
-  } catch (error) {
-    console.error({ error });
-    return new Response("Bad request", { status: 500 });
-  }
-};
 
 export const retrieveUsersByHashtag = async ({
   hashtag,
@@ -232,28 +112,34 @@ export const retrieveUserInfo = async (
   }
 };
 
-export const filterByProperties = async ({
+export const getUserProfilesByProperties = async ({
   idOrUsernameOrUrl,
   amount,
   mode,
   filterProperty,
   scraping_id,
+  credits,
 }: FilteredUserScanParams) => {
   try {
     let usersWithFilteredProperty: UserProfile[] = [];
     let paginationToken: string | undefined = undefined;
+    let usedCredits = 0;
 
     do {
+      // Fetch data from Instagram API
       const { data }: any = await instaInstance.get(`/${mode}`, {
         params: {
           username_or_id_or_url: idOrUsernameOrUrl,
           pagination_token: paginationToken,
         },
       });
+
+      // Extract relevant information from the response
       const nextPageToken = data.pagination_token;
       const { items } = data.data;
 
-      const filteredPublicUsers: User[] = items
+      // Filter and map public users from Instagram data
+      const filteredPublicUsers: BaseUser[] = items
         .filter((user: any) => !user.is_private)
         .map((user: any) => ({
           id: user.id,
@@ -264,56 +150,73 @@ export const filterByProperties = async ({
           is_private: user.is_private,
         }));
 
-      const filteredUsersWithFilteredProperty: UserProfile[] = (
-        await Promise.all(
-          filteredPublicUsers.map(async ({ id, ...rest }: BaseUser) => {
-            const userInfo = await retrieveUserInfo(id);
+      // Process each user to check filter criteria
+      for (const { id, ...rest } of filteredPublicUsers) {
+        if (
+          usedCredits >= credits ||
+          usersWithFilteredProperty.length >= amount
+        ) {
+          break; // Exit the loop if credits are exhausted or desired amount is reached
+        }
 
-            if (userInfo && userInfo[filterProperty]) {
-              const userProfile: UserProfile = {
-                ...rest,
-                ...userInfo,
-              };
+        usedCredits++;
+        const userInfo = await retrieveUserInfo(id);
 
-              return userProfile;
-            } else {
-              return null;
-            }
-          })
-        )
-      ).filter(Boolean) as UserProfile[];
-
-      console.log({ filteredUsersWithFilteredProperty });
-
-      if (filteredUsersWithFilteredProperty) {
-        filteredUsersWithFilteredProperty.forEach((user) =>
-          usersWithFilteredProperty.push(user)
-        );
+        if (userInfo) {
+          if (filterProperty && userInfo[filterProperty]) {
+            const userProfile: UserProfile = {
+              ...rest,
+              ...userInfo,
+            };
+            usersWithFilteredProperty.push(userProfile);
+          } else if (!filterProperty) {
+            usersWithFilteredProperty.push(userInfo);
+          }
+        }
       }
-      // usersWithFilteredProperty.concat(filteredUsersWithFilteredProperty);
 
-      console.log({
-        usersWithFilteredProperty,
-        lenght: usersWithFilteredProperty.length,
-      });
-
+      // Update pagination token for the next API call
       paginationToken = nextPageToken;
-    } while (paginationToken && usersWithFilteredProperty.length < amount);
+    } while (
+      paginationToken &&
+      usersWithFilteredProperty.length < amount &&
+      usedCredits < credits
+    );
 
+    // Process the filtered user profiles into leads
     const leads: Leads[] = turnUserProfilesIntoLeads(
       usersWithFilteredProperty,
       scraping_id
     );
 
+    // Add leads to the database
     await addLeadsToDatabase(leads);
 
+    // Count leads by contact information
     const { emailCount, phoneCount } = countLeadsByContactInfo(leads);
 
+    // Update scraping contacts information
     await editScrapingContacts(emailCount, phoneCount, scraping_id);
 
+    // Get the user ID associated with the scraping ID
+    const userId = await getUserIDByScrapingID(scraping_id);
+
+    // Log user ID and used credits
+    console.log({ userId, usedCredits });
+
+    // Spend credits for the user
+    await spendCredits(userId, usedCredits);
+
+    // Log the length of usersWithFilteredProperty
+    console.log({
+      usersWithFilteredPropertyLength: usersWithFilteredProperty.length,
+    });
+
+    // Return the final list of filtered user profiles
     return usersWithFilteredProperty;
   } catch (error) {
     console.error({ error });
+    // Return an appropriate response for the error
     return new Response("Bad request", { status: 500 });
   }
 };

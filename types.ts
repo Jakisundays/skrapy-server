@@ -95,7 +95,8 @@ export interface UserRetrievalParams {
 }
 
 export interface FilteredUserScanParams extends UserRetrievalParams {
-  filterProperty: "public_email" | "public_phone_number";
+  filterProperty?: "public_email" | "public_phone_number" | null;
+  credits: number;
 }
 
 export interface EmailDispatchInfo {

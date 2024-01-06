@@ -1,39 +1,3 @@
-GET http://localhost:8080/api/scraper/followers/rick.y.morty_
-###
-GET http://localhost:8080/api/scraper/following/rick.y.morty_
-###
-GET http://localhost:8080/api/scraper/likes/BZhRIWQH3tk
-###
-GET http://localhost:8080/api/scraper/comments/C0fZ5XSrm_b
-###
-GET http://localhost:8080/api/scraper/hashtag/bunjs
-###
-POST http://localhost:8080/api/email/send
-Content-Type: application/json
-
-{
-    "full_name": "Jako",
-    "to": "jacobguillermooo@gmail.com",
-    "subject": "Email testing"
-}
-###
-POST http://localhost:8080/api/scraper/retrieveUserConnections
-Content-Type: application/json
-
-{
-    "idOrUsernameOrUrl": "rick.y.morty_",
-    "mode": "followers"
-}
-###
-POST http://localhost:8080/api/scraper/likes
-Content-Type: application/json
-
-{
-    "code_or_id_or_url": "BZhRIWQH3tk"
-}
-###
-GET http://localhost:8080/api/mail
-###
 POST http://localhost:8080/api/scraper/filterByProperties
 Content-Type: application/json
 
@@ -42,7 +6,20 @@ Content-Type: application/json
      "amount": 2,
      "mode": "followers",
      "filterProperty": "public_email",
-     "scraping_id": 143
+     "scraping_id": 194,
+     "credits": 100
+}
+###
+POST http://localhost:8080/api/scraper/filterByProperties
+Content-Type: application/json
+
+{
+     "idOrUsernameOrUrl": "ibaillanos",
+     "amount": 2,
+     "mode": "followers",
+     "filterProperty": null,
+     "scraping_id": 194,
+     "credits": 100
 }
 
 ###

@@ -46,16 +46,20 @@ export const turnUserProfilesIntoLeads = (
   users.map((user) => createUserLeadsFromProfile(user, scraping_id));
 
 export const addLeadsToDatabase = async (leads: Leads[]) => {
-  try {
-    const { error } = await supabase.from("leads").insert(leads).select();
-    if (error) {
-      console.error({ error });
-      throw new Error(error.message);
+  if (leads.length > 0) {
+    try {
+      const { error } = await supabase.from("leads").insert(leads).select();
+      if (error) {
+        console.error({ error });
+        throw new Error(error.message);
+      }
+      console.log("Leads added to database successfully");
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to add leads to the database");
     }
-    console.log("Leads added to database successfully");
-  } catch (error) {
-    console.error(error);
-    throw new Error("Failed to add leads to the database");
+  }else{
+    console.warn('No leads to be saved in the database');
   }
 };
 
@@ -84,9 +88,53 @@ export const editScrapingContacts = async (
       console.error({ error });
       throw new Error(error.message);
     }
-    console.log(`Scraping row with ID: ${scraping_id} has been successfully modified 🎉`);
+    console.log(
+      `Scraping row with ID: ${scraping_id} has been successfully modified 🎉`
+    );
   } catch (error) {
     console.error(error);
     throw new Error((error as any).message);
+  }
+};
+
+export const getUserIDByScrapingID = async (scraping_id: number) => {
+  const { data: scraping_data, error } = await supabase
+    .from("scrapings")
+    .select("user_id")
+    .eq("id", scraping_id)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return scraping_data.user_id;
+};
+
+export const spendCredits = async (user_id: string, usedCredits: number) => {
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .select("used_credits, credits")
+    .eq("id", user_id)
+    .single();
+
+  if (userError) {
+    throw new Error(userError.message);
+  }
+
+  const { used_credits, credits } = userData;
+
+  const accumulatedUsedCredits = used_credits + usedCredits;
+
+  const remainingCredits = credits - usedCredits;
+
+  const { error: updateError } = await supabase
+    .from("users")
+    .update({ used_credits: accumulatedUsedCredits, credits: remainingCredits })
+    .eq("id", user_id)
+    .single();
+
+  if (updateError) {
+    throw new Error(updateError.message);
   }
 };

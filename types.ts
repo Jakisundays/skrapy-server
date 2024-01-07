@@ -99,7 +99,7 @@ export interface FilteredUserScanParams extends UserRetrievalParams {
   mode: "following" | "followers";
 }
 
-export interface getLimitedLikesByPropertiesParams extends UserRetrievalParams {
+export interface LimitedInteractionDetails extends UserRetrievalParams {
   code_or_id_or_url: string;
 }
 

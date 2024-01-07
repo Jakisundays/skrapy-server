@@ -1,12 +1,10 @@
 import {
   BaseUser,
-  Comment,
   FilteredUserScanParams,
   Leads,
   User,
   UserProfile,
-  UserRetrievalParams,
-  getLimitedLikesByPropertiesParams,
+  LimitedInteractionDetails,
 } from "../types";
 import {
   addLeadsToDatabase,
@@ -356,7 +354,7 @@ export const getLimitedLikesByProperties = async ({
   scraping_id,
   filterProperty,
   credits,
-}: getLimitedLikesByPropertiesParams): Promise<UserProfile[]> => {
+}: LimitedInteractionDetails): Promise<UserProfile[]> => {
   const usersWithFilteredProperty: UserProfile[] = [];
   let paginationToken: string | undefined = undefined;
   let usedCredits = 0;
@@ -456,7 +454,7 @@ export const getFilteredUsersFromComments = async ({
   scraping_id,
   filterProperty,
   credits,
-}: getLimitedLikesByPropertiesParams) => {
+}: LimitedInteractionDetails) => {
   let uniqueUsers: Set<string> = new Set();
   let usersWithFilteredProperty: UserProfile[] = [];
   let paginationToken: string | undefined = undefined;
@@ -469,7 +467,9 @@ export const getFilteredUsersFromComments = async ({
       });
 
       const nextPageToken = data.pagination_token;
-      const comments = data.data.items.filter((comment: any) => !comment.user.is_private);
+      const comments = data.data.items.filter(
+        (comment: any) => !comment.user.is_private
+      );
 
       console.log({ commentsLength: comments.length });
 
@@ -510,7 +510,6 @@ export const getFilteredUsersFromComments = async ({
       }
 
       paginationToken = nextPageToken;
-
     } while (
       paginationToken &&
       usersWithFilteredProperty.length < amount &&
@@ -521,7 +520,9 @@ export const getFilteredUsersFromComments = async ({
       console.log("Not enough public users found.");
     }
 
-    const usersWithContactInfo = getUsersWithContactInfo(usersWithFilteredProperty);
+    const usersWithContactInfo = getUsersWithContactInfo(
+      usersWithFilteredProperty
+    );
     const leads: Leads[] = turnUserProfilesIntoLeads(
       usersWithContactInfo,
       scraping_id

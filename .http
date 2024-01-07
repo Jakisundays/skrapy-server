@@ -1,4 +1,4 @@
-POST http://localhost:8080/api/scraper/filterByProperties
+POST http://localhost:8080/api/scraper/getUserProfilesByProperties
 Content-Type: application/json
 
 {
@@ -10,7 +10,7 @@ Content-Type: application/json
      "credits": 100
 }
 ###
-POST http://localhost:8080/api/scraper/filterByProperties
+POST http://localhost:8080/api/scraper/getUserProfilesByProperties
 Content-Type: application/json
 
 {
@@ -23,60 +23,70 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8080/api/scraper/getLimitedLikes
+POST http://localhost:8080/api/scraper/getLimitedLikesByProperties
 Content-Type: application/json
 
 {
-     "code_or_id_or_url": "https://www.instagram.com/p/CxdC3l4Odtr/",
-     "amount": 4
+     "code_or_id_or_url": "https://www.instagram.com/p/C1i1QIAt4jc",
+     "amount": 2,
+     "scraping_id": 194,
+     "filterProperty": "public_email",
+     "credits": 100
 }
 ###
-POST http://localhost:8080/api/scraper/retrieveUsersByComments
+POST http://localhost:8080/api/scraper/getLimitedLikesByProperties
 Content-Type: application/json
 
 {
-     "code_or_id_or_url": "https://www.instagram.com/p/C1HwYFlNeUO/",
-     "amount": 4,
-     "scraping_id": 143
-}
-###
-POST http://localhost:8080/api/scraper/retreiveUsersByLoc
-
-###
-POST https://skrapy-server.onrender.com/api/scraper/getLimitedAmount
-Content-Type: application/json
-
-{
-     "idOrUsernameOrUrl": "ibaillanos",
-     "amount": 100,
-     "mode": "followers",
-     "scraping_id": 121
-}
-###
-POST http://localhost:8080/api/scraper/getLimitedAmount
-Content-Type: application/json
-
-{
-     "idOrUsernameOrUrl": "ibaillanos",
-     "amount": 32,
-     "mode": "followers",
-     "scraping_id": 143
+     "code_or_id_or_url": "https://www.instagram.com/p/C1i1QIAt4jc",
+     "amount": 2,
+     "scraping_id": 194,
+     "filterProperty": null,
+     "credits": 100
 }
 
 ###
-POST https://skrapy-server.onrender.com/api/scraper/retrieveUsersByHashtag
-Content-Type: application/json
-
-{
-     "hashtag": "oreo",
-     "amount": 4
-}
-###
-POST http://localhost:8080/api/scraper/retrieveUsersByHashtag
+POST http://localhost:8080/api/scraper/getUsersFromHashtag
 Content-Type: application/json
 
 {
      "hashtag": "bitcoin",
-     "amount": 30,
-     "scraping_id": 143
+     "amount": 2,
+     "scraping_id": 194,
+     "filterProperty": "public_email",
+     "credits": 100
+}
+###
+POST http://localhost:8080/api/scraper/getUsersFromHashtag
+Content-Type: application/json
+
+{
+     "hashtag": "bitcoin",
+     "amount": 2,
+     "scraping_id": 194,
+     "filterProperty": null,
+     "credits": 100
+}
+
+###
+POST http://localhost:8080/api/scraper/getFilteredUsersFromComments
+Content-Type: application/json
+
+{
+     "code_or_id_or_url": "https://www.instagram.com/p/C1i1QIAt4jc",
+     "amount": 2,
+     "scraping_id": 194,
+     "filterProperty": "public_email",
+     "credits": 100
+}
+###
+POST http://localhost:8080/api/scraper/getFilteredUsersFromComments
+Content-Type: application/json
+
+{
+     "code_or_id_or_url": "https://www.instagram.com/p/C1i1QIAt4jc",
+     "amount": 2,
+     "scraping_id": 194,
+     "filterProperty": null,
+     "credits": 100
 }

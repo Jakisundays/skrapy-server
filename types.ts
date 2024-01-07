@@ -88,15 +88,19 @@ export interface HashTagProfile {
 }
 
 export interface UserRetrievalParams {
-  idOrUsernameOrUrl: string;
   amount: number;
-  mode: "following" | "followers";
   scraping_id: number;
+  credits: number;
+  filterProperty?: "public_email" | "public_phone_number" | null;
 }
 
 export interface FilteredUserScanParams extends UserRetrievalParams {
-  filterProperty?: "public_email" | "public_phone_number" | null;
-  credits: number;
+  idOrUsernameOrUrl: string;
+  mode: "following" | "followers";
+}
+
+export interface getLimitedLikesByPropertiesParams extends UserRetrievalParams {
+  code_or_id_or_url: string;
 }
 
 export interface EmailDispatchInfo {

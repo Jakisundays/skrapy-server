@@ -5,7 +5,7 @@ import {
   getGoogleAuthURL,
   getGoogleUserDetails,
   retrieveAccessToken,
-} from "../controllers/mail.actions";
+} from "../controllers/mail.controller";
 
 const mailRoutes = new Elysia({ prefix: "/api/mail" })
   .get("/", () => getGoogleAuthURL())

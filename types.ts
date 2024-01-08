@@ -105,12 +105,15 @@ export interface LimitedInteractionDetails extends UserRetrievalParams {
 
 export interface EmailDispatchInfo {
   refresh_token: string;
-  access_token: string;
-  expires: number;
   from: string;
   to: string[];
+  emailContent: EmailContent;
+}
+
+export interface EmailContent {
   subject: string;
-  content: string;
   heading: string;
-  preview: string;
+  buttonName: string;
+  buttonLink: string;
+  content: string;
 }

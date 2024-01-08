@@ -57,32 +57,21 @@ export const getGoogleAuthURL = async () => {
   return url;
 };
 
-export const createTransport = async (
-  refreshToken: string,
-  accessToken: string,
-  expires: number,
-  user: string
-) => {
-  let newAccessToken = null;
-  const expirationThreshold = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-  // Check if the provided access token is expired or will expire soon
-  const isAccessTokenExpired = expires < Date.now() + expirationThreshold;
+export const createTransport = async (refreshToken: string, user: string) => {
+  let accessToken = null;
 
   oauth2Client.setCredentials({
     refresh_token: refreshToken,
   });
 
-  if (isAccessTokenExpired) {
-    try {
-      oauth2Client.refreshAccessToken((error, res) => {
-        if (error) throw new Error("Error refreshing token");
-        newAccessToken = res?.access_token;
-      });
-      console.log("se hizo el access token");
-    } catch (error) {
-      throw new Error("Failed to refresh access token :(");
-    }
+  try {
+    oauth2Client.refreshAccessToken((error, res) => {
+      if (error) throw new Error("Error refreshing token");
+      accessToken = res?.access_token;
+    });
+    console.log("se hizo el access token");
+  } catch (error) {
+    throw new Error("Failed to refresh access token :(");
   }
 
   const transporter = nodemailer.createTransport({
@@ -95,7 +84,7 @@ export const createTransport = async (
       clientId: Bun.env.GOOGLE_CLIENT_ID,
       clientSecret: Bun.env.GOOGLE_CLIENT_SECRET,
       refreshToken,
-      accessToken: newAccessToken ?? accessToken,
+      accessToken: accessToken || "",
     },
   });
   return transporter;
@@ -103,43 +92,25 @@ export const createTransport = async (
 
 export const dispatchEmailWithCredentials = async ({
   refresh_token,
-  access_token,
-  expires,
   from,
   to,
-  subject,
-  content,
-  heading,
-  preview,
+  emailContent,
 }: EmailDispatchInfo) => {
-  console.log({
-    refresh_token,
-    access_token,
-    expires,
-    from,
-    to,
-    subject,
-    content,
-    heading,
-    preview,
-  });
-
   try {
-    const transporter = await createTransport(
-      refresh_token,
-      access_token,
-      expires,
-      from
-    );
+    await oauth2Client.setCredentials({
+      refresh_token: refresh_token,
+    });
+
+    const transporter = await createTransport(refresh_token, from);
 
     const template = render(
-      React.createElement(TestingEmail, { content, heading, preview })
+      React.createElement(TestingEmail, { emailContent })
     );
 
     const options = {
       from,
       to,
-      subject,
+      subject: emailContent.subject,
       html: template,
     };
     await transporter.sendMail(options);

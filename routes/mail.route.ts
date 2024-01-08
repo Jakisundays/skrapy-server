@@ -1,6 +1,5 @@
 import Elysia, { t } from "elysia";
 import {
-  createTransport,
   dispatchEmailWithCredentials,
   getGoogleAuthURL,
   getGoogleUserDetails,
@@ -29,14 +28,15 @@ const mailRoutes = new Elysia({ prefix: "/api/mail" })
     {
       body: t.Object({
         refresh_token: t.String(),
-        access_token: t.String(),
-        expires: t.Number(),
         from: t.String(),
         to: t.Array(t.String()),
-        subject: t.String(),
-        preview: t.String(),
-        heading: t.String(),
-        content: t.String(),
+        emailContent: t.Object({
+          subject: t.String(),
+          heading: t.String(),
+          buttonName: t.String(),
+          buttonLink: t.String(),
+          content: t.String(),
+        }),
       }),
     }
   );

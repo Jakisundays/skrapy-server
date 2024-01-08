@@ -60,7 +60,7 @@ export const getGoogleAuthURL = async () => {
 export const createTransport = async (refreshToken: string, user: string) => {
   let accessToken = null;
 
-  oauth2Client.setCredentials({
+  await oauth2Client.setCredentials({
     refresh_token: refreshToken,
   });
 
@@ -97,10 +97,6 @@ export const dispatchEmailWithCredentials = async ({
   emailContent,
 }: EmailDispatchInfo) => {
   try {
-    await oauth2Client.setCredentials({
-      refresh_token: refresh_token,
-    });
-
     const transporter = await createTransport(refresh_token, from);
 
     const template = render(
